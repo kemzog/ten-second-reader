@@ -39,6 +39,20 @@ test('parses Atom', () => {
   assert.equal(i.title, 'Atom記事');
 });
 
+test('resolves relative links against the channel link', () => {
+  const xml = `<rss version="2.0"><channel><title>H</title><link>https://hbr.org</link>
+<item><title>t</title><link>/2026/10/slug</link><pubDate>Tue, 20 Oct 2026 07:00:00 GMT</pubDate></item>
+</channel></rss>`;
+  assert.equal(parseFeed(xml, 'H', { url: 'http://feeds.hbr.org/x' }).at(0).link, 'https://hbr.org/2026/10/slug');
+});
+
+test('uses the configured site, then the feed URL', () => {
+  const xml = `<rss version="2.0"><channel><title>H</title>
+<item><title>t</title><link>/a</link></item></channel></rss>`;
+  assert.equal(parseFeed(xml, 'H', { site: 'https://hbr.org', url: 'http://feeds.hbr.org/x' }).at(0).link, 'https://hbr.org/a');
+  assert.equal(parseFeed(rss2, 'A', { url: 'https://other.example' }).at(0).link, 'https://a.example/1');
+});
+
 test('selectItems drops old items and caps per source', () => {
   const now = Date.parse('2026-10-20T08:00:00Z');
   const mk = (n, src, hoursAgo) => ({
