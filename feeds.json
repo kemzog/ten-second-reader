@@ -11,7 +11,8 @@
       { "name": "MIT Sloan Management Review", "url": "https://sloanreview.mit.edu/feed/" },
       { "name": "Knowledge at Wharton", "url": "https://knowledge.wharton.upenn.edu/feed/" },
       { "name": "Irrational Exuberance", "url": "https://lethain.com/feeds.xml" },
-      { "name": "Coral Insights", "url": "https://coralcap.co/feed/" }
+      { "name": "Coral Insights", "url": "https://coralcap.co/feed/" },
+      { "name": "Farnam Street", "url": "https://fs.blog/feed/" }
     ],
     "design": [
       { "name": "NN/g", "url": "https://www.nngroup.com/feed/rss/" },
