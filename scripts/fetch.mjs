@@ -148,11 +148,50 @@ async function fetchCategory(category, feeds, config) {
   console.log(`wrote ${category}: ${items.length} items`);
 }
 
+// Summarize a candidate feed for the curate page: recent titles show what it covers.
+export function summarizeCandidate(candidate, items) {
+  const dated = items
+    .filter((i) => i.published)
+    .sort((a, b) => Date.parse(b.published) - Date.parse(a.published));
+  const recent = dated.length ? dated : items;
+  return {
+    ...candidate,
+    count: items.length,
+    latest: dated[0]?.published ?? null,
+    samples: recent.slice(0, 5).map((i) => i.title),
+  };
+}
+
+// Candidates live in candidates.json. Ones already in feeds.json or that fail to fetch are left out.
+async function fetchCandidates(config) {
+  const candidates = JSON.parse(await readFile(new URL('../candidates.json', import.meta.url), 'utf8'));
+  const current = new Set(Object.values(config.categories).flat().map((f) => f.url));
+  const out = { updated: new Date().toISOString(), categories: {} };
+  for (const [category, list] of Object.entries(candidates)) {
+    const todo = list.filter((c) => !current.has(c.url));
+    const results = await Promise.allSettled(todo.map(fetchFeed));
+    out.categories[category] = [];
+    results.forEach((r, i) => {
+      const c = todo[i];
+      if (r.status === 'fulfilled' && r.value.length) {
+        console.log(`ok   candidate ${category}/${c.name}: ${r.value.length}`);
+        out.categories[category].push(summarizeCandidate(c, r.value));
+      } else {
+        console.warn(`fail candidate ${category}/${c.name}: ${r.reason?.message ?? 'no items'}`);
+      }
+    });
+  }
+  const dir = new URL('../public/curate/', import.meta.url);
+  await mkdir(dir, { recursive: true });
+  await writeFile(new URL('candidates.json', dir), JSON.stringify(out));
+}
+
 async function main() {
   const config = JSON.parse(await readFile(new URL('../feeds.json', import.meta.url), 'utf8'));
   for (const [category, feeds] of Object.entries(config.categories)) {
     await fetchCategory(category, feeds, config);
   }
+  await fetchCandidates(config);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
