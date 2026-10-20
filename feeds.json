@@ -3,10 +3,8 @@
   "perFeed": 5,
   "categories": {
     "management": [
-      { "name": "日経", "url": "https://assets.wor.jp/rss/rdf/nikkei/news.rdf" },
       { "name": "DHBR", "url": "https://dhbr.diamond.jp/list/feed/rss" },
       { "name": "ITmediaエグゼクティブ", "url": "https://rss.itmedia.co.jp/rss/2.0/executive.xml" },
-      { "name": "はてブ経済", "url": "https://b.hatena.ne.jp/hotentry/economics.rss" },
       { "name": "Lenny's", "url": "https://www.lennysnewsletter.com/feed" }
     ],
     "engineering": [
