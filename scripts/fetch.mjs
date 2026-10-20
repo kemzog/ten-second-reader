@@ -125,7 +125,7 @@ async function fetchCategory(category, feeds, config) {
     }
   });
   const items = selectItems(all, config);
-  const out = { updated: new Date().toISOString(), items };
+  const out = { updated: new Date().toISOString(), feeds: feeds.map((f) => f.name), items };
   const dir = new URL(`../public/${category}/`, import.meta.url);
   await mkdir(dir, { recursive: true });
   await writeFile(new URL('items.json', dir), JSON.stringify(out));
