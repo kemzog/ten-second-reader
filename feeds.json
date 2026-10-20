@@ -6,13 +6,8 @@
       { "name": "DHBR", "url": "https://dhbr.diamond.jp/list/feed/rss" },
       { "name": "ITmediaエグゼクティブ", "url": "https://rss.itmedia.co.jp/rss/2.0/executive.xml" },
       { "name": "Lenny's", "url": "https://www.lennysnewsletter.com/feed" },
-      { "name": "First Round Review", "url": "https://review.firstround.com/rss" },
-      { "name": "First Round Review 2", "url": "https://review.firstround.com/feed" },
       { "name": "HBR", "url": "http://feeds.hbr.org/harvardbusiness" },
-      { "name": "HBR 2", "url": "https://hbr.org/feed" },
-      { "name": "LayerX 福島", "url": "https://note.com/fukkyy/rss" },
-      { "name": "Wantedly 仲", "url": "https://note.com/akikonaka/rss" },
-      { "name": "Wantedly 仲 2", "url": "https://note.com/akiko_naka/rss" }
+      { "name": "LayerX 福島", "url": "https://note.com/fukkyy/rss" }
     ],
     "engineering": [
       { "name": "はてブ", "url": "https://b.hatena.ne.jp/hotentry/it.rss" },
