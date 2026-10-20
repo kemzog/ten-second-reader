@@ -26,7 +26,8 @@
       { "name": "深津貴之 (fladdict)", "url": "https://note.com/fladdict/rss" },
       { "name": "Smashing Magazine", "url": "https://www.smashingmagazine.com/feed/" },
       { "name": "Intercom Blog", "url": "https://www.intercom.com/blog/feed/" },
-      { "name": "The Systems Thinker", "url": "https://thesystemsthinker.com/feed/" }
+      { "name": "The Systems Thinker", "url": "https://thesystemsthinker.com/feed/" },
+      { "name": "Takram", "url": "https://note.com/takram/rss" }
     ],
     "engineering": [
       { "name": "はてブ", "url": "https://b.hatena.ne.jp/hotentry/it.rss" },
