@@ -5,7 +5,11 @@
     "management": [
       { "name": "DHBR", "url": "https://dhbr.diamond.jp/list/feed/rss" },
       { "name": "ITmediaエグゼクティブ", "url": "https://rss.itmedia.co.jp/rss/2.0/executive.xml" },
-      { "name": "Lenny's", "url": "https://www.lennysnewsletter.com/feed" }
+      { "name": "Lenny's", "url": "https://www.lennysnewsletter.com/feed" },
+      { "name": "First Round Review", "url": "https://review.firstround.com/feed.xml" },
+      { "name": "HBR", "url": "https://feeds.hbr.org/harvardbusiness" },
+      { "name": "LayerX 福島", "url": "https://note.com/fukkyy/rss" },
+      { "name": "Wantedly 仲", "url": "https://note.com/akikonaka/rss" }
     ],
     "engineering": [
       { "name": "はてブ", "url": "https://b.hatena.ne.jp/hotentry/it.rss" },
