@@ -26,7 +26,8 @@
       { "name": "日経クロステック", "url": "https://xtech.nikkei.com/rss/index.rdf" },
       { "name": "Pragmatic Engineer", "url": "https://newsletter.pragmaticengineer.com/feed" },
       { "name": "HN", "url": "https://hnrss.org/frontpage?points=300" },
-      { "name": "Qiita トレンド", "url": "https://qiita.com/popular-items/feed" }
+      { "name": "Qiita トレンド", "url": "https://qiita.com/popular-items/feed" },
+      { "name": "CodeZine", "url": "https://codezine.jp/rss/new/20/index.xml" }
     ]
   }
 }
