@@ -8,7 +8,8 @@
       { "name": "Lenny's", "url": "https://www.lennysnewsletter.com/feed" },
       { "name": "HBR", "url": "http://feeds.hbr.org/harvardbusiness", "site": "https://hbr.org" },
       { "name": "LayerX 福島", "url": "https://note.com/fukkyy/rss" },
-      { "name": "MIT Sloan Management Review", "url": "https://sloanreview.mit.edu/feed/" }
+      { "name": "MIT Sloan Management Review", "url": "https://sloanreview.mit.edu/feed/" },
+      { "name": "Knowledge at Wharton", "url": "https://knowledge.wharton.upenn.edu/feed/" }
     ],
     "design": [
       { "name": "NN/g", "url": "https://www.nngroup.com/feed/rss/" },
