@@ -2,7 +2,9 @@
   "maxAgeHours": 24,
   "perFeed": 5,
   "feeds": [
-    { "name": "NHK", "url": "https://www3.nhk.or.jp/rss/news/cat0.xml" },
+    { "name": "日経", "url": "https://assets.wor.jp/rss/rdf/nikkei/news.rdf" },
+    { "name": "はてブ", "url": "https://b.hatena.ne.jp/hotentry/it.rss" },
+    { "name": "Zenn", "url": "https://zenn.dev/feed" },
     { "name": "ITmedia", "url": "https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml" },
     { "name": "Publickey", "url": "https://www.publickey1.jp/atom.xml" },
     { "name": "HN", "url": "https://hnrss.org/frontpage?points=300" }
