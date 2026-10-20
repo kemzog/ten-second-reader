@@ -113,3 +113,5 @@ dialog button { font: inherit; padding: 6px 12px; border: 1px solid var(--line);
 #save-token { margin-top: 8px; }
 .close { width: 100%; margin-top: 12px; }
 .hint { font-size: 12px; color: var(--muted); }
+dialog label { display: flex; align-items: center; gap: 10px; width: 100%; }
+dialog input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }

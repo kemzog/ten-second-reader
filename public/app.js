@@ -31,6 +31,7 @@ function markRead(ids) {
 }
 
 let items = [];
+let feeds = [];
 let updated = null;
 let batch = [];
 
@@ -171,6 +172,7 @@ async function load() {
     const res = await fetch('items.json', { cache: 'no-cache' });
     const data = await res.json();
     items = data.items;
+    feeds = data.feeds ?? [];
     updated = data.updated;
   } catch {
     list.innerHTML = '<p class="empty">読み込めませんでした</p>';
@@ -191,23 +193,22 @@ function renderSettings() {
   $('sync-status').textContent = getToken()
     ? n ? `未送信 ${n}件` : '同期済み'
     : `トークン未設定（未送信 ${n}件は端末に保存中）`;
-  const excluded = [...excludedSources()];
-  $('excluded').replaceChildren(
-    ...(excluded.length ? excluded : [null]).map((source) => {
+  // Checked = shown. Include excluded names too, in case a feed was renamed or dropped.
+  const excluded = excludedSources();
+  const names = [...new Set([...feeds, ...items.map((i) => i.source), ...excluded])];
+  $('feeds').replaceChildren(
+    ...names.map((source) => {
       const li = document.createElement('li');
-      if (!source) {
-        li.textContent = 'なし';
-        return li;
-      }
-      const restore = document.createElement('button');
-      restore.type = 'button';
-      restore.textContent = '戻す';
-      restore.addEventListener('click', () => {
-        setExcluded(CATEGORY, source, false);
-        renderSettings();
+      const label = document.createElement('label');
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = !excluded.has(source);
+      box.addEventListener('change', () => {
+        setExcluded(CATEGORY, source, !box.checked);
         render();
       });
-      li.append(source, restore);
+      label.append(box, source);
+      li.append(label);
       return li;
     }),
   );
