@@ -4,8 +4,9 @@
 
 ## 仕組み
 
-- `feeds.json` にフィードを書く
-- GitHub Actions が30分ごとにRSSを取得して `items.json` を作り、GitHub Pages に公開
+- `feeds.json` にカテゴリ別（`management` / `engineering`）にフィードを書く
+- GitHub Actions が30分ごとにRSSを取得して `public/<カテゴリ>/items.json` を作り、GitHub Pages に公開
+- カテゴリごとに別URL（`/management/`、`/engineering/`）。それぞれホーム画面に追加すると別アプリになる
 - アプリは静的PWA（`public/`）。既読は端末ごとに保存
 
 ## 使い方
@@ -16,7 +17,7 @@
 
 ## フィードの追加
 
-`feeds.json` の `feeds` に `{ "name": "表示名", "url": "RSSのURL" }` を足すだけ。
+`feeds.json` の `categories.<カテゴリ>` に `{ "name": "表示名", "url": "RSSのURL" }` を足すだけ。カテゴリを増やす場合は `public/<カテゴリ>/` に `index.html` と `manifest.webmanifest` も追加する。
 
 - `maxAgeHours`: これより古い記事は出さない
 - `perFeed`: 1フィードあたりの最大件数
@@ -26,7 +27,7 @@
 ```sh
 npm install
 npm test
-npm run fetch   # public/items.json を生成
+npm run fetch   # public/<カテゴリ>/items.json を生成
 npx serve public
 ```
 
