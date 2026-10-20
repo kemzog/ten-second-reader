@@ -31,7 +31,8 @@
       { "name": "Simon Willison", "url": "https://simonwillison.net/atom/everything/" },
       { "name": "Martin Fowler", "url": "https://martinfowler.com/feed.atom" },
       { "name": "GitHub Blog", "url": "https://github.blog/feed/" },
-      { "name": "DevelopersIO", "url": "https://dev.classmethod.jp/feed/" }
+      { "name": "DevelopersIO", "url": "https://dev.classmethod.jp/feed/" },
+      { "name": "gihyo.jp", "url": "https://gihyo.jp/feed/rss2" }
     ]
   }
 }
