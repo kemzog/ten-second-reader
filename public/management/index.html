@@ -17,7 +17,10 @@
 <body>
 <header>
   <span id="count"></span>
-  <span id="updated"></span>
+  <span>
+    <span id="updated"></span>
+    <button id="open-settings" type="button" aria-label="設定">⚙︎</button>
+  </span>
 </header>
 <main id="list" aria-live="polite"></main>
 <section id="done" hidden>
@@ -25,6 +28,18 @@
   <p class="done-title">完了</p>
   <p class="done-sub" id="done-sub"></p>
 </section>
+<dialog id="settings">
+  <form method="dialog">
+    <h2>除外中のフィード</h2>
+    <ul id="excluded"></ul>
+    <h2>履歴の同期</h2>
+    <p class="hint">開いた記事の履歴と除外リストを非公開リポジトリ（ten-second-reader-data）に保存します。</p>
+    <input id="token" type="password" placeholder="GitHubトークン" autocomplete="off">
+    <button id="save-token" type="button">保存して同期</button>
+    <p id="sync-status" class="hint"></p>
+    <button class="close">閉じる</button>
+  </form>
+</dialog>
 <footer>
   <button id="finish" type="button">読んだ</button>
 </footer>

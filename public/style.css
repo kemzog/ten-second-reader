@@ -86,3 +86,30 @@ footer {
 .empty { color: var(--muted); text-align: center; padding-top: 30vh; }
 .chooser { padding-top: 30vh; }
 .chooser .meta { text-align: center; margin-top: 16px; }
+.card .meta { display: flex; align-items: center; gap: 6px; }
+.exclude, #open-settings {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+#open-settings { font-size: 15px; margin-left: 8px; }
+dialog {
+  width: min(92vw, 480px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--fg);
+}
+dialog::backdrop { background: rgb(0 0 0 / .5); }
+dialog h2 { font-size: 15px; margin: 8px 0; }
+dialog ul { list-style: none; padding: 0; margin: 0 0 12px; }
+dialog li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+dialog input { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+dialog button { font: inherit; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+#save-token { margin-top: 8px; }
+.close { width: 100%; margin-top: 12px; }
+.hint { font-size: 12px; color: var(--muted); }

@@ -1,4 +1,10 @@
+import {
+  flush, getExcluded, getToken, logEvent, pendingCount, pullExcluded, setExcluded, setToken,
+} from './sync.js';
+
 const BATCH = 10;
+// Pages live at /<category>/, e.g. /ten-second-reader/management/.
+const CATEGORY = location.pathname.split('/').filter(Boolean).at(-1) ?? '';
 const SEEN_KEY = 'seen';
 const SEEN_TTL = 48 * 3600_000;
 
@@ -36,7 +42,11 @@ function ago(iso) {
 const hhmm = (iso) =>
   new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 
-const unread = () => items.filter((i) => !seen[i.id]);
+const excludedSources = () => new Set(getExcluded()[CATEGORY] ?? []);
+const unread = () => {
+  const excluded = excludedSources();
+  return items.filter((i) => !seen[i.id] && !excluded.has(i.source));
+};
 
 function card(item) {
   const a = document.createElement('a');
@@ -48,6 +58,19 @@ function card(item) {
   const meta = document.createElement('div');
   meta.className = 'meta';
   meta.textContent = `${item.source} · ${ago(item.published)}`;
+  const exclude = document.createElement('button');
+  exclude.type = 'button';
+  exclude.className = 'exclude';
+  exclude.textContent = '除外';
+  exclude.setAttribute('aria-label', `${item.source}を除外`);
+  exclude.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`「${item.source}」をこのページから除外しますか？\n設定からいつでも戻せます。`)) return;
+    setExcluded(CATEGORY, item.source, true);
+    render();
+  });
+  meta.append(exclude);
   const title = document.createElement('div');
   title.className = 'title';
   title.textContent = item.title;
@@ -59,6 +82,15 @@ function card(item) {
     a.append(s);
   }
   a.addEventListener('click', () => {
+    logEvent({
+      type: 'open',
+      category: CATEGORY,
+      id: item.id,
+      source: item.source,
+      title: item.title,
+      link: item.link,
+      published: item.published,
+    });
     markRead([item.id]);
     a.classList.add('read');
     updateCount();
@@ -145,7 +177,58 @@ async function load() {
     return;
   }
   render();
+  pullExcluded().then((changed) => changed && render()).catch(() => {});
+  flush().catch(() => {});
 }
+
+// --- settings: GitHub token and excluded feeds ---
+
+const settings = $('settings');
+
+function renderSettings() {
+  $('token').value = getToken();
+  const n = pendingCount();
+  $('sync-status').textContent = getToken()
+    ? n ? `未送信 ${n}件` : '同期済み'
+    : `トークン未設定（未送信 ${n}件は端末に保存中）`;
+  const excluded = [...excludedSources()];
+  $('excluded').replaceChildren(
+    ...(excluded.length ? excluded : [null]).map((source) => {
+      const li = document.createElement('li');
+      if (!source) {
+        li.textContent = 'なし';
+        return li;
+      }
+      const restore = document.createElement('button');
+      restore.type = 'button';
+      restore.textContent = '戻す';
+      restore.addEventListener('click', () => {
+        setExcluded(CATEGORY, source, false);
+        renderSettings();
+        render();
+      });
+      li.append(source, restore);
+      return li;
+    }),
+  );
+}
+
+$('open-settings').addEventListener('click', () => {
+  renderSettings();
+  settings.showModal();
+});
+$('save-token').addEventListener('click', async () => {
+  setToken($('token').value);
+  $('sync-status').textContent = '同期中…';
+  try {
+    await flush();
+    if (await pullExcluded()) render();
+  } catch (e) {
+    $('sync-status').textContent = `同期に失敗しました（${e.message}）`;
+    return;
+  }
+  renderSettings();
+});
 
 // Refresh when the app comes back to the foreground (iOS keeps PWAs suspended).
 document.addEventListener('visibilitychange', () => {

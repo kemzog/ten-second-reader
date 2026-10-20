@@ -34,3 +34,12 @@ npx serve public
 ## 初回セットアップ
 
 リポジトリの Settings → Pages → Source を「GitHub Actions」にする。
+
+## 除外と閲覧履歴
+
+- 各カードの「除外」でそのフィードを即時に非表示（ページごと）。⚙︎ の設定画面から戻せる
+- 開いた記事と除外/復帰の操作は、非公開リポジトリ `kemzog/ten-second-reader-data` に保存される
+  - `history/YYYY-MM.jsonl`: 1行1イベント（`type`: `open` / `exclude` / `include`）
+  - `excluded.json`: カテゴリごとの除外中フィード名（端末間で同期）
+- 書き込みには fine-grained PAT（対象: `ten-second-reader-data` のみ、権限: Contents の Read and write）を ⚙︎ から各端末に1回入力する
+- トークン未設定のあいだは端末内にためておき、設定後にまとめて送信する
