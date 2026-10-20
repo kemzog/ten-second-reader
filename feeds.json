@@ -23,7 +23,8 @@
       { "name": "IDEO U", "url": "https://www.ideou.com/blogs/inspiration.atom" },
       { "name": "Goodpatch", "url": "https://goodpatch.com/blog/feed" },
       { "name": "Fast Company Design", "url": "https://www.fastcompany.com/co-design/rss" },
-      { "name": "深津貴之 (fladdict)", "url": "https://note.com/fladdict/rss" }
+      { "name": "深津貴之 (fladdict)", "url": "https://note.com/fladdict/rss" },
+      { "name": "Smashing Magazine", "url": "https://www.smashingmagazine.com/feed/" }
     ],
     "engineering": [
       { "name": "はてブ", "url": "https://b.hatena.ne.jp/hotentry/it.rss" },
