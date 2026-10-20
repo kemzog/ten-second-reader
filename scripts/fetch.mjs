@@ -35,11 +35,23 @@ function atomLink(links) {
   return alt ? alt['@href'] ?? text(alt) : '';
 }
 
+// Some feeds (e.g. HBR) give links like "/2026/10/slug"; resolve them against the site.
+function absolute(link, base) {
+  try {
+    return new URL(link, base).href;
+  } catch {
+    return link;
+  }
+}
+
 // Normalize RSS 2.0, RSS 1.0 (RDF) and Atom into one item shape.
-export function parseFeed(xml, source) {
+// Relative links resolve against feed.site if set, else the channel link, else feed.url.
+export function parseFeed(xml, source, feed = {}) {
   const doc = parser.parse(xml);
   let raw = [];
+  let site = '';
   if (doc.rss) {
+    site = text(doc.rss.channel?.link);
     raw = arr(doc.rss.channel?.item).map((i) => ({
       title: i.title,
       link: text(i.link),
@@ -48,6 +60,7 @@ export function parseFeed(xml, source) {
       guid: text(i.guid),
     }));
   } else if (doc.RDF) {
+    site = text(doc.RDF.channel?.link);
     raw = arr(doc.RDF.item).map((i) => ({
       title: i.title,
       link: text(i.link),
@@ -56,6 +69,7 @@ export function parseFeed(xml, source) {
       guid: i['@about'],
     }));
   } else if (doc.feed) {
+    site = atomLink(doc.feed.link);
     raw = arr(doc.feed.entry).map((e) => ({
       title: e.title,
       link: atomLink(e.link),
@@ -64,10 +78,11 @@ export function parseFeed(xml, source) {
       guid: text(e.id),
     }));
   }
+  const base = feed.site || absolute(site.trim(), feed.url) || feed.url;
   return raw
     .map((r) => {
       const title = cleanText(r.title);
-      const link = r.link.trim();
+      const link = absolute(r.link.trim(), base);
       let summary = cleanText(r.summary);
       if (summary === title) summary = '';
       if (summary.length > SUMMARY_LEN) summary = summary.slice(0, SUMMARY_LEN) + '…';
@@ -102,13 +117,14 @@ export function selectItems(items, { maxAgeHours, perFeed, now = Date.now() }) {
     });
 }
 
-async function fetchFeed({ name, url }) {
+async function fetchFeed(feed) {
+  const { name, url } = feed;
   const res = await fetch(url, {
     headers: { 'user-agent': 'ten-second-reader (+https://github.com/kemzog/ten-second-reader)' },
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseFeed(await res.text(), name);
+  return parseFeed(await res.text(), name, feed);
 }
 
 // Each category is served from its own page: public/<category>/items.json.
