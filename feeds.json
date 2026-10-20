@@ -10,7 +10,8 @@
       { "name": "LayerX 福島", "url": "https://note.com/fukkyy/rss" },
       { "name": "MIT Sloan Management Review", "url": "https://sloanreview.mit.edu/feed/" },
       { "name": "Knowledge at Wharton", "url": "https://knowledge.wharton.upenn.edu/feed/" },
-      { "name": "Irrational Exuberance", "url": "https://lethain.com/feeds.xml" }
+      { "name": "Irrational Exuberance", "url": "https://lethain.com/feeds.xml" },
+      { "name": "Coral Insights", "url": "https://coralcap.co/feed/" }
     ],
     "design": [
       { "name": "NN/g", "url": "https://www.nngroup.com/feed/rss/" },
