@@ -12,7 +12,8 @@
       { "name": "Knowledge at Wharton", "url": "https://knowledge.wharton.upenn.edu/feed/" },
       { "name": "Irrational Exuberance", "url": "https://lethain.com/feeds.xml" },
       { "name": "Coral Insights", "url": "https://coralcap.co/feed/" },
-      { "name": "Farnam Street", "url": "https://fs.blog/feed/" }
+      { "name": "Farnam Street", "url": "https://fs.blog/feed/" },
+      { "name": "Stratechery", "url": "https://stratechery.com/feed/" }
     ],
     "design": [
       { "name": "NN/g", "url": "https://www.nngroup.com/feed/rss/" },
