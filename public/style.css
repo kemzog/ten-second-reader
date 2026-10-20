@@ -84,3 +84,5 @@ footer {
 .done-title { font-size: 22px; font-weight: 700; margin: 4px 0; }
 .done-sub { color: var(--muted); font-size: 14px; }
 .empty { color: var(--muted); text-align: center; padding-top: 30vh; }
+.chooser { padding-top: 30vh; }
+.chooser .meta { text-align: center; margin-top: 16px; }

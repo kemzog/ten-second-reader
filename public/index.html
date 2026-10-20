@@ -5,29 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#fafaf7" media="(prefers-color-scheme: light)">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="10秒">
 <title>10秒リーダー</title>
-<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <span id="count"></span>
-  <span id="updated"></span>
-</header>
-<main id="list" aria-live="polite"></main>
-<section id="done" hidden>
-  <p class="done-mark">✓</p>
-  <p class="done-title">完了</p>
-  <p class="done-sub" id="done-sub"></p>
-</section>
-<footer>
-  <button id="finish" type="button">読んだ</button>
-</footer>
-<script src="app.js" type="module"></script>
+<main class="chooser">
+  <a class="card" href="management/">
+    <div class="title">マネジメント</div>
+    <div class="summary">経営・ビジネス・リーダーシップ</div>
+  </a>
+  <a class="card" href="engineering/">
+    <div class="title">エンジニアリング</div>
+    <div class="summary">技術ニュース・開発組織</div>
+  </a>
+  <p class="meta">それぞれ開いて「ホーム画面に追加」すると別アプリとして使えます。</p>
+</main>
 </body>
 </html>

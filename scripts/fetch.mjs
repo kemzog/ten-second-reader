@@ -1,5 +1,5 @@
-// Fetch every feed in feeds.json and write a small public/items.json for the app.
-import { readFile, writeFile } from 'node:fs/promises';
+// Fetch every feed in feeds.json and write a small items.json per category for the app.
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { XMLParser } from 'fast-xml-parser';
 
@@ -111,23 +111,32 @@ async function fetchFeed({ name, url }) {
   return parseFeed(await res.text(), name);
 }
 
-async function main() {
-  const config = JSON.parse(await readFile(new URL('../feeds.json', import.meta.url), 'utf8'));
-  const results = await Promise.allSettled(config.feeds.map(fetchFeed));
+// Each category is served from its own page: public/<category>/items.json.
+async function fetchCategory(category, feeds, config) {
+  const results = await Promise.allSettled(feeds.map(fetchFeed));
   const all = [];
   results.forEach((r, i) => {
-    const { name } = config.feeds[i];
+    const { name } = feeds[i];
     if (r.status === 'fulfilled') {
-      console.log(`ok   ${name}: ${r.value.length}`);
+      console.log(`ok   ${category}/${name}: ${r.value.length}`);
       all.push(...r.value);
     } else {
-      console.warn(`fail ${name}: ${r.reason.message}`);
+      console.warn(`fail ${category}/${name}: ${r.reason.message}`);
     }
   });
   const items = selectItems(all, config);
   const out = { updated: new Date().toISOString(), items };
-  await writeFile(new URL('../public/items.json', import.meta.url), JSON.stringify(out));
-  console.log(`wrote ${items.length} items`);
+  const dir = new URL(`../public/${category}/`, import.meta.url);
+  await mkdir(dir, { recursive: true });
+  await writeFile(new URL('items.json', dir), JSON.stringify(out));
+  console.log(`wrote ${category}: ${items.length} items`);
+}
+
+async function main() {
+  const config = JSON.parse(await readFile(new URL('../feeds.json', import.meta.url), 'utf8'));
+  for (const [category, feeds] of Object.entries(config.categories)) {
+    await fetchCategory(category, feeds, config);
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
