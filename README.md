@@ -4,9 +4,9 @@
 
 ## 仕組み
 
-- `feeds.json` にカテゴリ別（`management` / `engineering`）にフィードを書く
+- `feeds.json` にカテゴリ別（`management` / `engineering` / `design`）にフィードを書く
 - GitHub Actions が30分ごとにRSSを取得して `public/<カテゴリ>/items.json` を作り、GitHub Pages に公開
-- カテゴリごとに別URL（`/management/`、`/engineering/`）。それぞれホーム画面に追加すると別アプリになる
+- カテゴリごとに別URL（`/management/`、`/engineering/`、`/design/`）。それぞれホーム画面に追加すると別アプリになる
 - アプリは静的PWA（`public/`）。既読は端末ごとに保存
 
 ## 使い方
