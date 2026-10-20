@@ -25,7 +25,8 @@
       { "name": "Publickey", "url": "https://www.publickey1.jp/atom.xml" },
       { "name": "日経クロステック", "url": "https://xtech.nikkei.com/rss/index.rdf" },
       { "name": "Pragmatic Engineer", "url": "https://newsletter.pragmaticengineer.com/feed" },
-      { "name": "HN", "url": "https://hnrss.org/frontpage?points=300" }
+      { "name": "HN", "url": "https://hnrss.org/frontpage?points=300" },
+      { "name": "Qiita トレンド", "url": "https://qiita.com/popular-items/feed" }
     ]
   }
 }
