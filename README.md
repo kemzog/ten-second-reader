@@ -43,3 +43,11 @@ npx serve public
   - `excluded.json`: カテゴリごとの除外中フィード名（端末間で同期）
 - 書き込みには fine-grained PAT（対象: `ten-second-reader-data` のみ、権限: Contents の Read and write）を ⚙︎ から各端末に1回入力する
 - トークン未設定のあいだは端末内にためておき、設定後にまとめて送信する
+
+## フィード探し（`/curate/`）
+
+閲覧履歴から読書の傾向（カテゴリ・サイト・よく出る言葉・言語比率）を出し、`candidates.json` の候補サイトを履歴との近さで並べて提案する。「追加」で `feeds.json` を main に直接コミットし、数分後にリーダーへ反映される。「興味なし」は履歴に記録して以後出さない。
+
+- 候補は `candidates.json`（`name` / `url` / `lang` / `tags` / `note`）。GitHub Actions が30分ごとに候補も取得し、最近の記事タイトルを `public/curate/candidates.json` に書く。取得できない候補と登録済みのフィードは出ない
+- トークンはリーダーと共通。fine-grained PAT の対象に `ten-second-reader-data`（履歴の読み取り）と `ten-second-reader`（feeds.json の更新）の両方を入れ、どちらも Contents: Read and write にする
+- 追加・興味なしは履歴に `add` / `dismiss-candidate` イベントとして残る

@@ -52,7 +52,7 @@ export function logEvent(event) {
 
 // --- GitHub contents API ---
 
-function toBase64(text) {
+export function toBase64(text) {
   const bytes = new TextEncoder().encode(text);
   let bin = '';
   for (let i = 0; i < bytes.length; i += 0x8000) {
@@ -60,7 +60,7 @@ function toBase64(text) {
   }
   return btoa(bin);
 }
-function fromBase64(b64) {
+export function fromBase64(b64) {
   const bin = atob(b64.replace(/\s/g, ''));
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }

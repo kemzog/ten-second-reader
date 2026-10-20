@@ -84,7 +84,7 @@ footer {
 .done-title { font-size: 22px; font-weight: 700; margin: 4px 0; }
 .done-sub { color: var(--muted); font-size: 14px; }
 .empty { color: var(--muted); text-align: center; padding-top: 30vh; }
-.chooser { padding-top: 30vh; }
+.chooser { padding-top: 22vh; }
 .chooser .meta { text-align: center; margin-top: 16px; }
 .card .meta { display: flex; align-items: center; gap: 6px; }
 .exclude, #open-settings {
@@ -115,3 +115,30 @@ dialog button { font: inherit; padding: 6px 12px; border: 1px solid var(--line);
 .hint { font-size: 12px; color: var(--muted); }
 dialog label { display: flex; align-items: center; gap: 10px; width: 100%; }
 dialog input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+
+/* curate page */
+.curate main { padding: 0 16px 32px; }
+.curate h1 { font-size: 18px; margin: 16px 0 8px; }
+.curate h2 { font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+.trend-summary { margin: 0; font-size: 14px; }
+.bars { list-style: none; padding: 0; margin: 0; }
+.bars li { display: grid; grid-template-columns: 9em 1fr 2em; align-items: center; gap: 8px; font-size: 13px; padding: 2px 0; }
+.bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar { display: block; height: 100%; background: var(--accent); }
+.bar-n { text-align: right; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; }
+.tab, .more, .rec button {
+  font: inherit; font-size: 13px; padding: 6px 12px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--fg);
+}
+.tab.on, .rec button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.more { width: 100%; border-radius: 12px; }
+.rec .note { font-size: 13px; }
+.rec .why { font-size: 12px; color: var(--accent); margin-top: 4px; }
+.rec .samples { font-size: 12px; color: var(--muted); margin: 6px 0; padding-left: 1.2em; }
+.rec .samples li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec .actions { display: flex; gap: 8px; }
+.rec .meta { gap: 10px; }

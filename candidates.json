@@ -1,0 +1,39 @@
+{
+  "management": [
+    { "name": "Farnam Street", "url": "https://fs.blog/feed/", "lang": "en", "tags": ["mental models", "思考法", "意思決定", "decision", "thinking", "leadership"], "note": "メンタルモデルと意思決定の考え方。時事ではなく普遍的な思考法" },
+    { "name": "MIT Sloan Management Review", "url": "https://sloanreview.mit.edu/feed/", "lang": "en", "tags": ["strategy", "戦略", "leadership", "組織", "management", "ai"], "note": "研究ベースの経営・組織論。HBRに近い" },
+    { "name": "Irrational Exuberance", "url": "https://lethain.com/feeds.xml", "lang": "en", "tags": ["engineering management", "マネジメント", "組織", "executive", "strategy", "エンジニア"], "note": "Will Larson。エンジニア出身の経営幹部のための組織・戦略論" },
+    { "name": "Rands in Repose", "url": "https://randsinrepose.com/feed/", "lang": "en", "tags": ["manager", "マネージャー", "1on1", "leadership", "エンジニア"], "note": "エンジニア出身マネージャーの実践知" },
+    { "name": "Paul Graham", "url": "http://www.aaronsw.com/2002/feeds/pgessays.rss", "lang": "en", "tags": ["startup", "思考法", "essay", "founder", "thinking"], "note": "Paul Grahamのエッセイ。更新は少ないが普遍的" },
+    { "name": "Seth Godin", "url": "https://seths.blog/feed/", "lang": "en", "tags": ["marketing", "leadership", "思考法", "thinking", "顧客"], "note": "毎日1本の短いエッセイ。10秒で読める" },
+    { "name": "Knowledge at Wharton", "url": "https://knowledge.wharton.upenn.edu/feed/", "lang": "en", "tags": ["strategy", "戦略", "management", "leadership", "経営"], "note": "ウォートン校の経営研究の紹介" },
+    { "name": "Stratechery", "url": "https://stratechery.com/feed/", "lang": "en", "tags": ["strategy", "戦略", "tech", "business model", "ai"], "note": "テック企業の戦略分析" },
+    { "name": "Biz/Zine", "url": "https://bizzine.jp/rss/new/20/index.xml", "lang": "ja", "tags": ["戦略", "経営", "新規事業", "イノベーション", "組織", "マネジメント"], "note": "新規事業・イノベーション・経営の実践" },
+    { "name": "Coral Insights", "url": "https://coralcap.co/feed/", "lang": "ja", "tags": ["スタートアップ", "経営", "組織", "採用", "startup"], "note": "Coral Capitalの経営者向け解説" },
+    { "name": "サイボウズ式", "url": "https://cybozushiki.cybozu.co.jp/feed", "lang": "ja", "tags": ["チーム", "組織", "働き方", "マネジメント", "コミュニケーション"], "note": "チームワークと組織づくり" },
+    { "name": "ProductZine", "url": "https://productzine.jp/rss/new/20/index.xml", "lang": "ja", "tags": ["プロダクト", "product", "顧客", "戦略", "pm"], "note": "プロダクトマネジメントの実践" }
+  ],
+  "engineering": [
+    { "name": "Martin Fowler", "url": "https://martinfowler.com/feed.atom", "lang": "en", "tags": ["architecture", "アーキテクチャ", "設計", "refactoring", "ai"], "note": "ソフトウェア設計の定番" },
+    { "name": "Simon Willison", "url": "https://simonwillison.net/atom/everything/", "lang": "en", "tags": ["llm", "ai", "生成ai", "python", "tools"], "note": "LLM・AIツールの実践的な検証" },
+    { "name": "InfoQ", "url": "https://feed.infoq.com/", "lang": "en", "tags": ["architecture", "cloud", "devops", "aws", "組織"], "note": "アーキテクチャと開発組織" },
+    { "name": "GitHub Blog", "url": "https://github.blog/feed/", "lang": "en", "tags": ["github", "devops", "ai", "copilot", "security"], "note": "GitHubの公式ブログ" },
+    { "name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/rss/", "lang": "en", "tags": ["network", "security", "セキュリティ", "infra", "ai"], "note": "インフラ・セキュリティの深掘り" },
+    { "name": "Qiita トレンド", "url": "https://qiita.com/popular-items/feed", "lang": "ja", "tags": ["プログラミング", "ai", "生成ai", "aws", "python"], "note": "Qiitaの人気記事" },
+    { "name": "gihyo.jp", "url": "https://gihyo.jp/feed/rss2", "lang": "ja", "tags": ["プログラミング", "linux", "セキュリティ", "クラウド"], "note": "技術評論社の技術記事・ニュース" },
+    { "name": "CodeZine", "url": "https://codezine.jp/rss/new/20/index.xml", "lang": "ja", "tags": ["開発", "エンジニア", "組織", "生成ai", "マネジメント"], "note": "開発者向け。開発組織・EM関連も多い" },
+    { "name": "DevelopersIO", "url": "https://dev.classmethod.jp/feed/", "lang": "ja", "tags": ["aws", "クラウド", "生成ai", "ai"], "note": "クラスメソッドの技術ブログ（量が多め）" },
+    { "name": "Mercari Engineering", "url": "https://engineering.mercari.com/blog/feed.xml", "lang": "ja", "tags": ["エンジニア", "組織", "設計", "アーキテクチャ"], "note": "メルカリの技術・開発組織" }
+  ],
+  "design": [
+    { "name": "The Systems Thinker", "url": "https://thesystemsthinker.com/feed/", "lang": "en", "tags": ["systems thinking", "システム思考", "組織", "learning"], "note": "システム思考の実践記事" },
+    { "name": "Smashing Magazine", "url": "https://www.smashingmagazine.com/feed/", "lang": "en", "tags": ["ux", "design", "research", "accessibility"], "note": "UX・デザインの実務" },
+    { "name": "A List Apart", "url": "https://alistapart.com/main/feed/", "lang": "en", "tags": ["design", "ux", "content", "process"], "note": "デザインとWebの考え方" },
+    { "name": "Boxes and Arrows", "url": "https://boxesandarrows.com/feed/", "lang": "en", "tags": ["ux", "information architecture", "research", "design"], "note": "情報設計・UXの論考" },
+    { "name": "Mind the Product", "url": "https://www.mindtheproduct.com/feed/", "lang": "en", "tags": ["product", "プロダクト", "discovery", "課題発見", "pm"], "note": "プロダクトディスカバリーと課題発見" },
+    { "name": "Center Centre (Jared Spool)", "url": "https://articles.centercentre.com/feed/", "lang": "en", "tags": ["ux", "design leadership", "research", "組織"], "note": "UX組織とデザインリーダーシップ" },
+    { "name": "Intercom Blog", "url": "https://www.intercom.com/blog/feed/", "lang": "en", "tags": ["product", "design", "customer", "顧客"], "note": "プロダクト・顧客理解" },
+    { "name": "深津貴之 (fladdict)", "url": "https://note.com/fladdict/rss", "lang": "ja", "tags": ["デザイン", "思考法", "生成ai", "ux"], "note": "UXデザインと思考法、AI活用" },
+    { "name": "Takram", "url": "https://note.com/takram/rss", "lang": "ja", "tags": ["デザイン", "デザイン思考", "イノベーション", "システム思考"], "note": "デザインイノベーションファームの思考" }
+  ]
+}
