@@ -107,12 +107,21 @@ export function scoreCandidate(candidate, category, stats) {
   return { score, matched: matched.slice(0, 4).map(([tok]) => tok) };
 }
 
+const FRESH_DAYS = 3;
+
+// A pick the daily analysis added in the last few days.
+export function isFresh(candidate, now = Date.now()) {
+  const t = Date.parse(candidate.addedAt ?? '');
+  return now - t < FRESH_DAYS * 86400e3;
+}
+
 // Candidates for one category, best first, minus ones already subscribed or dismissed.
-export function rank(candidates, category, stats, { skip = new Set() } = {}) {
+// Fresh picks from the daily analysis come first, so each day's new suggestions are seen.
+export function rank(candidates, category, stats, { skip = new Set(), now = Date.now() } = {}) {
   return candidates
-    .map((c, order) => ({ ...c, order, ...scoreCandidate(c, category, stats) }))
+    .map((c, order) => ({ ...c, order, fresh: isFresh(c, now), ...scoreCandidate(c, category, stats) }))
     .filter((c) => !skip.has(c.url))
-    .sort((a, b) => b.score - a.score || a.order - b.order);
+    .sort((a, b) => b.fresh - a.fresh || b.score - a.score || a.order - b.order);
 }
 
 // Same layout as the hand-written feeds.json: one line per feed, so diffs stay readable.

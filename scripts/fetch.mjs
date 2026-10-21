@@ -3,7 +3,7 @@
 // The private data repo runs this and publishes outDir to its `items` branch, which the app reads with the user's token.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
 const SUMMARY_LEN = 90;
@@ -165,9 +165,33 @@ export function summarizeCandidate(candidate, items) {
   };
 }
 
-// Candidates live in candidates.json. Ones already in feeds.json or that fail to fetch are left out.
-async function fetchCandidates(config, outDir) {
-  const candidates = JSON.parse(await readFile(new URL('../candidates.json', import.meta.url), 'utf8'));
+// Hand-picked candidates live in this repo's candidates.json; the daily analysis adds its picks
+// to candidates.json next to feeds.json in the data repo. The same URL in both keeps the data repo's fields.
+export function mergeCandidates(base, extra = {}) {
+  const out = {};
+  for (const cat of new Set([...Object.keys(base), ...Object.keys(extra)])) {
+    const byUrl = new Map();
+    for (const c of [...(base[cat] ?? []), ...(extra[cat] ?? [])]) byUrl.set(c.url, { ...byUrl.get(c.url), ...c });
+    out[cat] = [...byUrl.values()];
+  }
+  return out;
+}
+
+async function readJson(path, fallback) {
+  try {
+    return JSON.parse(await readFile(path, 'utf8'));
+  } catch (e) {
+    if (e.code === 'ENOENT') return fallback;
+    throw e;
+  }
+}
+
+// Ones already in feeds.json or that fail to fetch are left out.
+async function fetchCandidates(config, dataDir, outDir) {
+  const candidates = mergeCandidates(
+    JSON.parse(await readFile(new URL('../candidates.json', import.meta.url), 'utf8')),
+    await readJson(join(dataDir, 'candidates.json'), {}),
+  );
   const current = new Set(Object.values(config.categories).flat().map((f) => f.url));
   const out = { updated: new Date().toISOString(), categories: {} };
   for (const [category, list] of Object.entries(candidates)) {
@@ -187,6 +211,9 @@ async function fetchCandidates(config, outDir) {
   const dir = join(outDir, 'curate');
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, 'candidates.json'), JSON.stringify(out));
+  // The daily analysis's write-up of reading tendencies, shown at the top of the curate page.
+  const insights = await readJson(join(dataDir, 'insights.json'), null);
+  if (insights) await writeFile(join(dir, 'insights.json'), JSON.stringify(insights));
 }
 
 async function main(feedsPath = 'feeds.json', outDir = 'out') {
@@ -194,7 +221,7 @@ async function main(feedsPath = 'feeds.json', outDir = 'out') {
   for (const [category, feeds] of Object.entries(config.categories)) {
     await fetchCategory(category, feeds, config, outDir);
   }
-  await fetchCandidates(config, outDir);
+  await fetchCandidates(config, dirname(feedsPath), outDir);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

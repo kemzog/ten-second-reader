@@ -63,3 +63,13 @@ test('selectItems drops old items and caps per source', () => {
   const out = selectItems(items, { maxAgeHours: 24, perFeed: 2, now });
   assert.deepEqual(out.map((i) => i.id), ['5', '1', '2']);
 });
+
+test('mergeCandidates adds data repo picks and lets them override by URL', async () => {
+  const { mergeCandidates } = await import('../scripts/fetch.mjs');
+  const merged = mergeCandidates(
+    { management: [{ name: 'A', url: 'a', note: 'base' }], design: [{ name: 'D', url: 'd' }] },
+    { management: [{ name: 'A', url: 'a', reason: 'why' }, { name: 'B', url: 'b' }], engineering: [{ name: 'E', url: 'e' }] },
+  );
+  assert.deepEqual(merged.management, [{ name: 'A', url: 'a', note: 'base', reason: 'why' }, { name: 'B', url: 'b' }]);
+  assert.deepEqual(Object.keys(merged), ['management', 'design', 'engineering']);
+});

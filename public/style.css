@@ -138,6 +138,10 @@ dialog input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--a
 .more { width: 100%; border-radius: 12px; }
 .rec .note { font-size: 13px; }
 .rec .why { font-size: 12px; color: var(--accent); margin-top: 4px; }
+.rec .misfit { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.rec .meta .fresh { color: var(--accent); font-weight: 600; }
+.curate .insight { font-size: 14px; line-height: 1.6; margin: 0 0 6px; }
+.curate .themes { font-size: 13px; margin: 0 0 8px; padding-left: 1.2em; }
 .rec .samples { font-size: 12px; color: var(--muted); margin: 6px 0; padding-left: 1.2em; }
 .rec .samples li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rec .actions { display: flex; gap: 8px; }
