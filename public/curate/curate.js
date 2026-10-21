@@ -23,6 +23,7 @@ const ymd = (iso) => {
 
 let stats;
 let candidates = {};
+let insights; // the daily analysis's write-up, if any
 let feeds; // current feeds.json from GitHub
 let tab;
 let showAll = false;
@@ -82,6 +83,18 @@ function bars(counts, max = 8) {
   return ul;
 }
 
+// The daily analysis's write-up: a summary and a few themes, newest day only.
+function insightParts() {
+  if (!insights?.summary) return [];
+  const parts = [el('h2', null, `Claudeの分析（${ymd(insights.date)}）`), el('p', 'insight', insights.summary)];
+  if (insights.themes?.length) {
+    const ul = el('ul', 'themes');
+    for (const t of insights.themes) ul.append(el('li', null, t));
+    parts.push(ul);
+  }
+  return parts;
+}
+
 function renderTrend() {
   const box = $('trend');
   if (!stats.total) {
@@ -94,7 +107,9 @@ function renderTrend() {
   const cats = Object.fromEntries(Object.entries(stats.byCategory).map(([k, v]) => [label(k), v]));
   const kw = el('div', 'chips');
   for (const [k] of stats.keywords) kw.append(el('span', 'chip', k));
-  const parts = [summary, el('h2', null, 'カテゴリ'), bars(cats), el('h2', null, 'よく開くサイト'), bars(stats.bySource)];
+  const ins = insightParts();
+  if (ins.length) ins.push(el('h2', null, '数字で見る'));
+  const parts = [...ins, summary, el('h2', null, 'カテゴリ'), bars(cats), el('h2', null, 'よく開くサイト'), bars(stats.bySource)];
   if (stats.keywords.length) parts.push(el('h2', null, 'よく出る言葉'), kw);
   const excluded = new Map();
   for (const e of stats.excludes) {
@@ -143,9 +158,12 @@ function recCard(c) {
   const meta = el('div', 'meta');
   meta.append(el('span', null, c.lang === 'ja' ? '日本語' : '英語'));
   if (c.latest) meta.append(el('span', null, `最終更新 ${ymd(c.latest)}`));
+  if (c.fresh) meta.append(el('span', 'fresh', `新着 ${ymd(c.addedAt)}`));
   card.append(meta, el('div', 'title', c.name), el('div', 'note', c.note));
-  const why = reason(c);
+  // Picks from the daily analysis carry their own reasoning; hand-picked ones fall back to keyword overlap.
+  const why = c.reason ?? reason(c);
   if (why) card.append(el('div', 'why', why));
+  if (c.misfit) card.append(el('div', 'misfit', `合わないかも：${c.misfit}`));
   const samples = el('ul', 'samples');
   for (const s of (c.samples ?? []).slice(0, 3)) samples.append(el('li', null, s));
   card.append(samples);
@@ -173,7 +191,7 @@ function renderRecs() {
   const list = rank(candidates[tab] ?? [], tab, stats, { skip })
     .filter((c) => !have.has(c.url) && !have.has(c.name));
   if (!list.length) {
-    box.replaceChildren(el('p', 'hint', '今出せる候補はありません。新しい候補はClaudeに相談して増やせます。'));
+    box.replaceChildren(el('p', 'hint', '今出せる候補はありません。新しい候補は毎日の分析で追加されます。'));
     return;
   }
   const shown = showAll ? list : list.slice(0, SHOWN);
@@ -235,14 +253,16 @@ async function load() {
   }
   $('status').textContent = '読み込み中…';
   try {
-    const [events, feedState, cands] = await Promise.all([
+    const [events, feedState, cands, ins] = await Promise.all([
       loadHistory(),
       loadFeeds(),
       readItems('curate/candidates.json').catch(() => ({ categories: {} })),
+      readItems('curate/insights.json').catch(() => null),
     ]);
     stats = analyze(events);
     feeds = feedState;
     candidates = cands.categories;
+    insights = ins;
     for (const e of events) if (e.type === 'dismiss-candidate') skip.add(e.url);
   } catch (e) {
     $('status').textContent = '';

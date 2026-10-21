@@ -81,3 +81,14 @@ test('candidates.json entries have name, url, lang and tags', () => {
     }
   }
 });
+
+test('rank puts fresh picks from the daily analysis first', () => {
+  const s = analyze([open('management', 'DHBR', '戦略的マネジメントの構築')], now);
+  const list = rank([
+    { name: 'Match', url: 'a', lang: 'ja', tags: ['マネジメント', '戦略'] },
+    { name: 'Pick', url: 'b', lang: 'en', tags: ['design'], addedAt: '2026-10-19T21:00:00Z' },
+    { name: 'Old pick', url: 'c', lang: 'en', tags: ['design'], addedAt: '2026-10-01T21:00:00Z' },
+  ], 'management', s, { now });
+  assert.deepEqual(list.map((c) => c.name), ['Pick', 'Match', 'Old pick']);
+  assert.equal(list[0].fresh, true);
+});
