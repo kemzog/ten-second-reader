@@ -1,35 +1,17 @@
 import {
-  flush, getExcluded, getToken, logEvent, pendingCount, pullExcluded, readItems, setExcluded, setToken,
+  flush, getExcluded, getSeen, getToken, logEvent, markSeen, pendingCount, pullExcluded, pullSeen, readItems, setExcluded,
+  setToken,
 } from './sync.js';
 
 const BATCH = 10;
 // Pages live at /<category>/, e.g. /ten-second-reader/management/.
 const CATEGORY = location.pathname.split('/').filter(Boolean).at(-1) ?? '';
-const SEEN_KEY = 'seen';
 const ITEMS_KEY = `items:${CATEGORY}`;
-const SEEN_TTL = 48 * 3600_000;
 
 const $ = (id) => document.getElementById(id);
 const list = $('list');
 
-function loadSeen() {
-  try {
-    const seen = JSON.parse(localStorage.getItem(SEEN_KEY)) ?? {};
-    const cutoff = Date.now() - SEEN_TTL;
-    for (const [id, t] of Object.entries(seen)) if (t < cutoff) delete seen[id];
-    return seen;
-  } catch {
-    return {};
-  }
-}
-const seen = loadSeen();
-function markRead(ids) {
-  const now = Date.now();
-  for (const id of ids) seen[id] = now;
-  try {
-    localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
-  } catch {}
-}
+const seen = getSeen();
 
 let items = [];
 let feeds = [];
@@ -93,7 +75,7 @@ function card(item) {
       link: item.link,
       published: item.published,
     });
-    markRead([item.id]);
+    markSeen([item.id]);
     a.classList.add('read');
     updateCount();
   });
@@ -126,7 +108,7 @@ function addSwipe(el, item) {
 }
 
 function dismiss(el, item) {
-  markRead([item.id]);
+  markSeen([item.id]);
   el.classList.add('gone');
   el.addEventListener('transitionend', () => {
     el.remove();
@@ -164,7 +146,7 @@ function next() {
 }
 
 $('finish').addEventListener('click', () => {
-  markRead(batch.map((i) => i.id));
+  markSeen(batch.map((i) => i.id));
   next();
 });
 
@@ -210,7 +192,10 @@ async function load() {
       return;
     }
   }
-  pullExcluded().then((changed) => changed && render()).catch(() => {});
+  // Drop what was read or excluded on another device.
+  Promise.all([pullExcluded(), pullSeen()])
+    .then(([ex, read]) => (ex || read) && render())
+    .catch(() => {});
   flush().catch(() => {});
 }
 
