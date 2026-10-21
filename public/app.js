@@ -1,11 +1,12 @@
 import {
-  flush, getExcluded, getToken, logEvent, pendingCount, pullExcluded, setExcluded, setToken,
+  flush, getExcluded, getToken, logEvent, pendingCount, pullExcluded, readItems, setExcluded, setToken,
 } from './sync.js';
 
 const BATCH = 10;
 // Pages live at /<category>/, e.g. /ten-second-reader/management/.
 const CATEGORY = location.pathname.split('/').filter(Boolean).at(-1) ?? '';
 const SEEN_KEY = 'seen';
+const ITEMS_KEY = `items:${CATEGORY}`;
 const SEEN_TTL = 48 * 3600_000;
 
 const $ = (id) => document.getElementById(id);
@@ -167,18 +168,48 @@ $('finish').addEventListener('click', () => {
   next();
 });
 
+function show(data) {
+  items = data.items;
+  feeds = data.feeds ?? [];
+  updated = data.updated;
+  render();
+}
+
+function message(text) {
+  const p = document.createElement('p');
+  p.className = 'empty';
+  p.textContent = text;
+  list.replaceChildren(p);
+  list.hidden = false;
+  $('done').hidden = true;
+}
+
+// Articles come from the private data repo, so they need the token.
+// The last copy is kept on the device so the screen fills instantly.
 async function load() {
-  try {
-    const res = await fetch('items.json', { cache: 'no-cache' });
-    const data = await res.json();
-    items = data.items;
-    feeds = data.feeds ?? [];
-    updated = data.updated;
-  } catch {
-    list.innerHTML = '<p class="empty">読み込めませんでした</p>';
+  if (!getToken()) {
+    message('⚙︎ からGitHubトークンを設定すると記事が表示されます');
     return;
   }
-  render();
+  let cached = null;
+  try {
+    cached = JSON.parse(localStorage.getItem(ITEMS_KEY));
+  } catch {}
+  if (cached && !items.length) show(cached);
+  try {
+    const data = await readItems(`${CATEGORY}/items.json`);
+    try {
+      localStorage.setItem(ITEMS_KEY, JSON.stringify(data));
+    } catch {}
+    show(data);
+  } catch (e) {
+    if (!cached) {
+      message(/: (401|403|404)$/.test(e.message)
+        ? `読み込めませんでした（${e.message}）。⚙︎ のトークンを確認してください`
+        : '読み込めませんでした');
+      return;
+    }
+  }
   pullExcluded().then((changed) => changed && render()).catch(() => {});
   flush().catch(() => {});
 }
@@ -223,12 +254,13 @@ $('save-token').addEventListener('click', async () => {
   $('sync-status').textContent = '同期中…';
   try {
     await flush();
-    if (await pullExcluded()) render();
+    await pullExcluded();
   } catch (e) {
     $('sync-status').textContent = `同期に失敗しました（${e.message}）`;
     return;
   }
   renderSettings();
+  load();
 });
 
 // Refresh when the app comes back to the foreground (iOS keeps PWAs suspended).

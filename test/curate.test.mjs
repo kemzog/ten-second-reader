@@ -46,7 +46,20 @@ test('rank keeps list order without history', () => {
 });
 
 test('formatFeeds reproduces feeds.json layout', () => {
-  const text = readFileSync(new URL('../feeds.json', import.meta.url), 'utf8');
+  const text = `{
+  "maxAgeHours": 24,
+  "perFeed": 5,
+  "categories": {
+    "management": [
+      { "name": "DHBR", "url": "https://dhbr.diamond.jp/list/feed/rss" },
+      { "name": "HBR", "url": "http://feeds.hbr.org/harvardbusiness", "site": "https://hbr.org" }
+    ],
+    "design": [
+      { "name": "NN/g", "url": "https://www.nngroup.com/feed/rss/" }
+    ]
+  }
+}
+`;
   assert.equal(formatFeeds(JSON.parse(text)), text);
 });
 

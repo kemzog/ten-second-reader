@@ -1,6 +1,9 @@
 // Fetch every feed in feeds.json and write a small items.json per category for the app.
+// Usage: node scripts/fetch.mjs <feeds.json> <outDir>
+// The private data repo runs this and publishes outDir to its `items` branch, which the app reads with the user's token.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
 const SUMMARY_LEN = 90;
@@ -127,8 +130,8 @@ async function fetchFeed(feed) {
   return parseFeed(await res.text(), name, feed);
 }
 
-// Each category is served from its own page: public/<category>/items.json.
-async function fetchCategory(category, feeds, config) {
+// Each category gets its own file: <outDir>/<category>/items.json.
+async function fetchCategory(category, feeds, config, outDir) {
   const results = await Promise.allSettled(feeds.map(fetchFeed));
   const all = [];
   results.forEach((r, i) => {
@@ -142,9 +145,9 @@ async function fetchCategory(category, feeds, config) {
   });
   const items = selectItems(all, config);
   const out = { updated: new Date().toISOString(), feeds: feeds.map((f) => f.name), items };
-  const dir = new URL(`../public/${category}/`, import.meta.url);
+  const dir = join(outDir, category);
   await mkdir(dir, { recursive: true });
-  await writeFile(new URL('items.json', dir), JSON.stringify(out));
+  await writeFile(join(dir, 'items.json'), JSON.stringify(out));
   console.log(`wrote ${category}: ${items.length} items`);
 }
 
@@ -163,7 +166,7 @@ export function summarizeCandidate(candidate, items) {
 }
 
 // Candidates live in candidates.json. Ones already in feeds.json or that fail to fetch are left out.
-async function fetchCandidates(config) {
+async function fetchCandidates(config, outDir) {
   const candidates = JSON.parse(await readFile(new URL('../candidates.json', import.meta.url), 'utf8'));
   const current = new Set(Object.values(config.categories).flat().map((f) => f.url));
   const out = { updated: new Date().toISOString(), categories: {} };
@@ -181,21 +184,21 @@ async function fetchCandidates(config) {
       }
     });
   }
-  const dir = new URL('../public/curate/', import.meta.url);
+  const dir = join(outDir, 'curate');
   await mkdir(dir, { recursive: true });
-  await writeFile(new URL('candidates.json', dir), JSON.stringify(out));
+  await writeFile(join(dir, 'candidates.json'), JSON.stringify(out));
 }
 
-async function main() {
-  const config = JSON.parse(await readFile(new URL('../feeds.json', import.meta.url), 'utf8'));
+async function main(feedsPath = 'feeds.json', outDir = 'out') {
+  const config = JSON.parse(await readFile(feedsPath, 'utf8'));
   for (const [category, feeds] of Object.entries(config.categories)) {
-    await fetchCategory(category, feeds, config);
+    await fetchCategory(category, feeds, config, outDir);
   }
-  await fetchCandidates(config);
+  await fetchCandidates(config, outDir);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((e) => {
+  main(process.argv[2], process.argv[3]).catch((e) => {
     console.error(e);
     process.exit(1);
   });

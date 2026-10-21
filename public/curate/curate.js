@@ -1,10 +1,9 @@
-import { fromBase64, getToken, logEvent, setToken, toBase64 } from '../sync.js';
+import { fromBase64, getToken, logEvent, readItems, setToken, toBase64 } from '../sync.js';
 import { analyze, formatFeeds, rank } from './score.js';
 
-// Reads history from the private data repo, and adds feeds by committing feeds.json to the app repo.
+// Reads history and candidates from the private data repo, and adds feeds by committing its feeds.json.
 const OWNER = 'kemzog';
 const DATA_REPO = 'ten-second-reader-data';
-const APP_REPO = 'ten-second-reader';
 const LABELS = { management: 'マネジメント', engineering: 'エンジニアリング', design: 'デザイン' };
 const SKIP_KEY = 'curate-skip';
 const SHOWN = 5;
@@ -62,7 +61,7 @@ async function loadHistory() {
 }
 
 async function loadFeeds() {
-  const json = await (await api(APP_REPO, 'feeds.json')).json();
+  const json = await (await api(DATA_REPO, 'feeds.json')).json();
   return { config: JSON.parse(fromBase64(json.content)), sha: json.sha };
 }
 
@@ -202,7 +201,7 @@ async function addFeed(c, button) {
     const list = (feeds.config.categories[category] ??= []);
     if (!list.some((f) => f.url === c.url)) {
       list.push(c.site ? { name: c.name, url: c.url, site: c.site } : { name: c.name, url: c.url });
-      await api(APP_REPO, 'feeds.json', {
+      await api(DATA_REPO, 'feeds.json', {
         method: 'PUT',
         body: JSON.stringify({
           message: `feeds: ${label(category)}に${c.name}を追加（フィード探しから）`,
@@ -221,7 +220,7 @@ async function addFeed(c, button) {
     button.textContent = '追加';
     const perm = /: (403|404)$/.test(e.message);
     alert(perm
-      ? `追加できませんでした（${e.message}）。トークンに ten-second-reader の Contents: Read and write 権限があるか確認してください。`
+      ? `追加できませんでした（${e.message}）。トークンに ten-second-reader-data の Contents: Read and write 権限があるか確認してください。`
       : `追加できませんでした（${e.message}）`);
   }
 }
@@ -239,7 +238,7 @@ async function load() {
     const [events, feedState, cands] = await Promise.all([
       loadHistory(),
       loadFeeds(),
-      fetch('candidates.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : { categories: {} })),
+      readItems('curate/candidates.json').catch(() => ({ categories: {} })),
     ]);
     stats = analyze(events);
     feeds = feedState;
