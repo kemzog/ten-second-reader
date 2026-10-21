@@ -1,4 +1,4 @@
-// Stores reading history and excluded feeds in a private GitHub repo so they
+// Stores reading history, read articles and excluded feeds in a private GitHub repo so they
 // sync between devices and Claude can read them. Everything works offline:
 // events wait in localStorage until a token is set and a push succeeds.
 // Articles also live there (the `items` branch, written by its Actions), so
@@ -9,6 +9,9 @@ const TOKEN_KEY = 'gh-token';
 const OUTBOX_KEY = 'outbox';
 const EXCLUDED_KEY = 'excluded';
 const EXCLUDED_DIRTY_KEY = 'excluded-dirty';
+const SEEN_KEY = 'seen';
+const SEEN_DIRTY_KEY = 'seen-dirty';
+const SEEN_TTL = 48 * 3600_000;
 const OUTBOX_MAX = 2000;
 
 const read = (key, fallback) => {
@@ -41,6 +44,45 @@ export function setExcluded(category, source, excluded) {
   write(EXCLUDED_KEY, all);
   write(EXCLUDED_DIRTY_KEY, true);
   logEvent({ type: excluded ? 'exclude' : 'include', category, source });
+}
+
+// --- read articles: { [itemId]: epochMs } ---
+// Kept for 48h, longer than items live (24h). Devices merge by union, so a read never comes back.
+
+function prune(seen, now = Date.now()) {
+  const cutoff = now - SEEN_TTL;
+  for (const [id, t] of Object.entries(seen)) if (!(t >= cutoff)) delete seen[id];
+  return seen;
+}
+export function mergeSeen(a, b) {
+  const out = { ...a };
+  for (const [id, t] of Object.entries(b)) if (!(out[id] >= t)) out[id] = t;
+  return prune(out);
+}
+
+const seen = prune(read(SEEN_KEY, {}));
+export const getSeen = () => seen;
+
+export function markSeen(ids) {
+  const now = Date.now();
+  for (const id of ids) seen[id] = now;
+  write(SEEN_KEY, seen);
+  write(SEEN_DIRTY_KEY, true);
+  flush();
+}
+
+// Pull reads made on other devices. Returns true when something new was marked read.
+export async function pullSeen() {
+  if (!getToken()) return false;
+  const { text } = await getFile('seen.json');
+  if (text == null) return false;
+  let added = false;
+  for (const [id, t] of Object.entries(mergeSeen(seen, JSON.parse(text)))) {
+    if (!(id in seen)) added = true;
+    seen[id] = t;
+  }
+  write(SEEN_KEY, seen);
+  return added;
 }
 
 // --- history events ---
@@ -128,6 +170,16 @@ async function doFlush() {
     await update(`history/${month}.jsonl`, (text) => (text ?? '') + lines, `history: ${events.length} events`);
     // Re-read so anything logged while we were pushing is kept.
     write(OUTBOX_KEY, read(OUTBOX_KEY, []).slice(events.length));
+  }
+  // Clear the flag before pushing, so reads marked during the push send again.
+  while (read(SEEN_DIRTY_KEY, false)) {
+    write(SEEN_DIRTY_KEY, false);
+    try {
+      await update('seen.json', (text) => JSON.stringify(mergeSeen(JSON.parse(text ?? '{}'), seen)) + '\n', 'update read articles');
+    } catch (e) {
+      write(SEEN_DIRTY_KEY, true);
+      throw e;
+    }
   }
   if (read(EXCLUDED_DIRTY_KEY, false)) {
     const json = JSON.stringify(getExcluded(), null, 2) + '\n';
