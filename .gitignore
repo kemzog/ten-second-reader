@@ -1,3 +1,2 @@
 node_modules/
-public/*/items.json
-public/curate/candidates.json
+out/

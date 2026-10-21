@@ -1,7 +1,9 @@
 // Stores reading history and excluded feeds in a private GitHub repo so they
 // sync between devices and Claude can read them. Everything works offline:
 // events wait in localStorage until a token is set and a push succeeds.
-const DATA = { owner: 'kemzog', repo: 'ten-second-reader-data', branch: 'main' };
+// Articles also live there (the `items` branch, written by its Actions), so
+// nothing is readable without the token.
+const DATA = { owner: 'kemzog', repo: 'ten-second-reader-data', branch: 'main', items: 'items' };
 const API = `https://api.github.com/repos/${DATA.owner}/${DATA.repo}/contents/`;
 const TOKEN_KEY = 'gh-token';
 const OUTBOX_KEY = 'outbox';
@@ -65,8 +67,8 @@ export function fromBase64(b64) {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }
 
-async function gh(path, init = {}) {
-  return fetch(API + path + (init.method ? '' : `?ref=${DATA.branch}`), {
+async function gh(path, init = {}, ref = DATA.branch) {
+  return fetch(API + path + (init.method ? '' : `?ref=${ref}`), {
     cache: 'no-store',
     ...init,
     headers: {
@@ -132,6 +134,13 @@ async function doFlush() {
     await update('excluded.json', () => json, 'update excluded feeds');
     write(EXCLUDED_DIRTY_KEY, false);
   }
+}
+
+// Read a file the data repo's Actions published, e.g. "management/items.json".
+export async function readItems(path) {
+  const res = await gh(path, { headers: { accept: 'application/vnd.github.raw' } }, DATA.items);
+  if (!res.ok) throw new Error(`${path}: ${res.status}`);
+  return res.json();
 }
 
 // Pull excluded feeds set from another device. Local unsent changes win.

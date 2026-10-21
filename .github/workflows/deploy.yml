@@ -1,10 +1,9 @@
-name: Fetch feeds and deploy
+# Deploys only the app shell. Articles are fetched by the private data repo's Actions.
+name: Deploy
 
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +29,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run fetch
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
