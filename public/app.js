@@ -26,6 +26,15 @@ function ago(iso) {
 const hhmm = (iso) =>
   new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 
+// The data repo fetches on cron '*/30 * * * *' (UTC, so :00/:30 in JST too).
+// GitHub often starts scheduled runs a few minutes late, hence 「頃」.
+function nextFetch() {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  d.setMinutes(d.getMinutes() < 30 ? 30 : 60);
+  return d.toISOString();
+}
+
 const excludedSources = () => new Set(getExcluded()[CATEGORY] ?? []);
 const unread = () => {
   const excluded = excludedSources();
@@ -121,7 +130,7 @@ function dismiss(el, item) {
 function updateCount() {
   const n = unread().length;
   $('count').textContent = n ? `あと${n}件` : '';
-  $('updated').textContent = updated ? `${hhmm(updated)} 更新` : '';
+  $('updated').textContent = updated ? `${hhmm(updated)} 更新 · 次 ${hhmm(nextFetch())}頃` : '';
 }
 
 function render() {
@@ -252,6 +261,9 @@ $('save-token').addEventListener('click', async () => {
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') load();
 });
+
+// Keep the 「次 HH:MM頃」 label current while the app stays open.
+setInterval(updateCount, 60000);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register(new URL('sw.js', import.meta.url));
 load();
