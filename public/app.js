@@ -14,6 +14,26 @@ const list = $('list');
 
 const seen = getSeen();
 
+// Articles opened by tapping stay in the list (dimmed) until dismissed or 「読んだ」.
+// Per device, kept 48h like seen.
+const OPENED_KEY = 'opened';
+const opened = (() => {
+  try {
+    const o = JSON.parse(localStorage.getItem(OPENED_KEY)) ?? {};
+    const cutoff = Date.now() - 48 * 3600 * 1000;
+    for (const [id, t] of Object.entries(o)) if (!(t >= cutoff)) delete o[id];
+    return o;
+  } catch {
+    return {};
+  }
+})();
+function markOpened(id) {
+  opened[id] = Date.now();
+  try {
+    localStorage.setItem(OPENED_KEY, JSON.stringify(opened));
+  } catch {}
+}
+
 let items = [];
 let feeds = [];
 let updated = null;
@@ -49,6 +69,7 @@ function card(item) {
   a.target = '_blank';
   a.rel = 'noopener';
   a.dataset.id = item.id;
+  if (opened[item.id]) a.classList.add('read');
   const meta = document.createElement('div');
   meta.className = 'meta';
   meta.textContent = `${item.source} · ${ago(item.published)}`;
@@ -95,7 +116,7 @@ function card(item) {
       link: item.link,
       published: item.published,
     });
-    markSeen([item.id]);
+    markOpened(item.id);
     a.classList.add('read');
     updateCount();
   });
@@ -159,7 +180,7 @@ function dismiss(el, item) {
 }
 
 function updateCount() {
-  const n = unread().length;
+  const n = unread().filter((i) => !opened[i.id]).length;
   $('count').textContent = n ? `あと${n}件` : '';
   $('updated').textContent = updated ? `${hhmm(updated)} 更新 · 次 ${hhmm(nextFetch())}頃` : '';
 }
