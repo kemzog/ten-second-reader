@@ -293,6 +293,34 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') load();
 });
 
+// Pull down at the top to reload, like Safari (home-screen apps have no reload button).
+// A full reload also picks up a new version of the app.
+const pull = document.createElement('div');
+pull.className = 'pull';
+document.body.prepend(pull);
+let pullY0 = null;
+let pullDy = 0;
+document.addEventListener('touchstart', (e) => {
+  pullY0 = window.scrollY <= 0 && !settings.open ? e.touches[0].clientY : null;
+  pullDy = 0;
+}, { passive: true });
+document.addEventListener('touchmove', (e) => {
+  if (pullY0 == null) return;
+  pullDy = Math.max(e.touches[0].clientY - pullY0, 0);
+  pull.style.height = `${Math.min(pullDy / 2, 60)}px`;
+  pull.textContent = pullDy > 120 ? '↻ 離して更新' : '↓ 引っ張って更新';
+}, { passive: true });
+document.addEventListener('touchend', () => {
+  if (pullY0 == null) return;
+  pullY0 = null;
+  if (pullDy > 120) {
+    pull.textContent = '更新中…';
+    location.reload();
+  } else {
+    pull.style.height = '';
+  }
+});
+
 // Keep the 「次 HH:MM頃」 label current while the app stays open.
 setInterval(updateCount, 60000);
 
