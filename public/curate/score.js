@@ -28,9 +28,9 @@ export const isJapanese = (text) => /[\u3040-\u30ff\u4e00-\u9fff]/.test(String(t
 // Newer reads count more, so the profile follows changing interests.
 const recency = (t, now) => 0.5 ** ((now - Date.parse(t)) / (HALF_LIFE_DAYS * 86400_000));
 
-// Summarize open events: counts per category/source, keywords, language mix.
+// Summarize open events (asking Claude about an article counts too): counts per category/source, keywords, language mix.
 export function analyze(events, now = Date.now()) {
-  const opens = events.filter((e) => e.type === 'open' && e.title);
+  const opens = events.filter((e) => (e.type === 'open' || e.type === 'claude') && e.title);
   const byCategory = {};
   const bySource = {};
   const keywords = {};

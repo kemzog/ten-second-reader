@@ -2,6 +2,7 @@ import {
   flush, getExcluded, getSeen, getToken, logEvent, markSeen, pendingCount, pullExcluded, pullSeen, readItems, setExcluded,
   setToken,
 } from './sync.js';
+import { claudeUrl } from './claude.js';
 
 const BATCH = 10;
 // Pages live at /<category>/, e.g. /ten-second-reader/management/.
@@ -63,7 +64,17 @@ function card(item) {
     setExcluded(CATEGORY, item.source, true);
     render();
   });
-  meta.append(exclude);
+  const ask = document.createElement('button');
+  ask.type = 'button';
+  ask.className = 'ask';
+  ask.textContent = 'Claude';
+  ask.setAttribute('aria-label', 'この記事についてClaudeと話す');
+  ask.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    askClaude(a, item);
+  });
+  meta.append(exclude, ask);
   const title = document.createElement('div');
   title.className = 'title';
   title.textContent = item.title;
@@ -92,7 +103,24 @@ function card(item) {
   return a;
 }
 
-// Swipe left to dismiss a single card.
+// Open a Claude conversation about the article; counts as reading it.
+function askClaude(el, item) {
+  window.open(claudeUrl(item), '_blank', 'noopener');
+  logEvent({
+    type: 'claude',
+    category: CATEGORY,
+    id: item.id,
+    source: item.source,
+    title: item.title,
+    link: item.link,
+    published: item.published,
+  });
+  markSeen([item.id]);
+  el.classList.add('read');
+  updateCount();
+}
+
+// Swipe left to dismiss a single card, right to ask Claude about it.
 function addSwipe(el, item) {
   let x0 = null;
   let y0 = null;
@@ -106,13 +134,16 @@ function addSwipe(el, item) {
     if (x0 == null) return;
     dx = e.touches[0].clientX - x0;
     if (Math.abs(e.touches[0].clientY - y0) > Math.abs(dx)) { x0 = null; return; }
-    if (dx < 0) el.style.transform = `translateX(${dx}px)`;
+    el.style.transform = `translateX(${dx}px)`;
+    el.classList.toggle('asking', dx > 80);
   }, { passive: true });
   el.addEventListener('touchend', () => {
     if (x0 == null) return;
     x0 = null;
     el.style.transform = '';
+    el.classList.remove('asking');
     if (dx < -80) dismiss(el, item);
+    else if (dx > 80) askClaude(el, item);
   });
 }
 
