@@ -33,6 +33,11 @@
     <h2>表示するフィード</h2>
     <p class="hint">チェックを外したフィードは除外されます。</p>
     <ul id="feeds"></ul>
+    <details id="excluded-box" hidden>
+      <summary id="excluded-title"></summary>
+      <p class="hint">チェックを入れると表示に戻ります。</p>
+      <ul id="excluded-feeds"></ul>
+    </details>
     <h2>トークン</h2>
     <p class="hint">記事・除外リスト・閲覧履歴は非公開リポジトリ（ten-second-reader-data）にあり、このトークンがある端末でだけ表示・保存されます。</p>
     <input id="token" type="password" placeholder="GitHubトークン" autocomplete="off">
