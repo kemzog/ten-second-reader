@@ -98,8 +98,8 @@ footer {
 .chooser .meta { text-align: center; margin-top: 16px; }
 .card .meta { display: flex; align-items: center; gap: 6px; }
 .card.asking { border-color: var(--accent); }
-.ask { border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; padding: 2px 4px; }
-.exclude, #open-settings {
+.ask { margin-left: auto; border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; padding: 2px 4px; }
+#open-settings {
   margin-left: auto;
   border: 0;
   background: none;
