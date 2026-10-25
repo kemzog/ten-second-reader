@@ -158,3 +158,5 @@ dialog input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--a
 .rec .samples li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rec .actions { display: flex; gap: 8px; }
 .rec .meta { gap: 10px; }
+dialog details { margin: 0 0 12px; }
+dialog summary { font-size: 13px; color: var(--muted); padding: 6px 0; cursor: pointer; }

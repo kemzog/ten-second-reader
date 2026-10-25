@@ -270,25 +270,30 @@ function renderSettings() {
   $('sync-status').textContent = getToken()
     ? n ? `未送信 ${n}件` : '同期済み'
     : `トークン未設定（未送信 ${n}件は端末に保存中）`;
-  // Checked = shown. Include excluded names too, in case a feed was renamed or dropped.
+  // Checked = shown. Excluded feeds are listed apart, folded, so the main list is only
+  // what is shown. Include excluded names too, in case a feed was renamed or dropped.
   const excluded = excludedSources();
   const names = [...new Set([...feeds, ...items.map((i) => i.source), ...excluded])];
-  $('feeds').replaceChildren(
-    ...names.map((source) => {
-      const li = document.createElement('li');
-      const label = document.createElement('label');
-      const box = document.createElement('input');
-      box.type = 'checkbox';
-      box.checked = !excluded.has(source);
-      box.addEventListener('change', () => {
-        setExcluded(CATEGORY, source, !box.checked);
-        render();
-      });
-      label.append(box, source);
-      li.append(label);
-      return li;
-    }),
-  );
+  const row = (source) => {
+    const li = document.createElement('li');
+    const label = document.createElement('label');
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = !excluded.has(source);
+    box.addEventListener('change', () => {
+      setExcluded(CATEGORY, source, !box.checked);
+      render();
+      renderSettings();
+    });
+    label.append(box, source);
+    li.append(label);
+    return li;
+  };
+  const hidden = names.filter((n) => excluded.has(n));
+  $('feeds').replaceChildren(...names.filter((n) => !excluded.has(n)).map(row));
+  $('excluded-feeds').replaceChildren(...hidden.map(row));
+  $('excluded-title').textContent = `除外中のフィード（${hidden.length}）`;
+  $('excluded-box').hidden = !hidden.length;
 }
 
 $('open-settings').addEventListener('click', () => {
