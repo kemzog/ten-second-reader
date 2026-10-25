@@ -73,18 +73,6 @@ function card(item) {
   const meta = document.createElement('div');
   meta.className = 'meta';
   meta.textContent = `${item.source} · ${ago(item.published)}`;
-  const exclude = document.createElement('button');
-  exclude.type = 'button';
-  exclude.className = 'exclude';
-  exclude.textContent = '除外';
-  exclude.setAttribute('aria-label', `${item.source}を除外`);
-  exclude.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm(`「${item.source}」をこのページから除外しますか？\n設定からいつでも戻せます。`)) return;
-    setExcluded(CATEGORY, item.source, true);
-    render();
-  });
   const ask = document.createElement('button');
   ask.type = 'button';
   ask.className = 'ask';
@@ -95,7 +83,7 @@ function card(item) {
     e.stopPropagation();
     askClaude(a, item);
   });
-  meta.append(exclude, ask);
+  meta.append(ask);
   const title = document.createElement('div');
   title.className = 'title';
   title.textContent = item.title;
