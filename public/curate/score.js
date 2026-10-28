@@ -2,6 +2,8 @@
 // No DOM here so it can be tested with node.
 
 const HALF_LIFE_DAYS = 30;
+// An article marked Good counts this many times as much as one only opened.
+export const GOOD_WEIGHT = 3;
 const STOP = new Set(`the and for with from that this your you are how why what when who into about
 over more than not new can will its our their they has have was were but all out just use using
 one two get gets make makes ways way via vs it's don't here there them then these those also
@@ -28,9 +30,24 @@ export const isJapanese = (text) => /[\u3040-\u30ff\u4e00-\u9fff]/.test(String(t
 // Newer reads count more, so the profile follows changing interests.
 const recency = (t, now) => 0.5 ** ((now - Date.parse(t)) / (HALF_LIFE_DAYS * 86400_000));
 
+// Articles still marked Good (a later 'ungood' takes one back), oldest first.
+export function goods(events) {
+  const marked = new Map();
+  for (const e of events) {
+    const key = `${e.category}/${e.id ?? e.link ?? e.title}`;
+    if (e.type === 'good' && e.title) marked.set(key, e);
+    if (e.type === 'ungood') marked.delete(key);
+  }
+  return [...marked.values()];
+}
+
 // Summarize open events (asking Claude about an article counts too): counts per category/source, keywords, language mix.
+// Good articles weigh GOOD_WEIGHT times an open in the interest profile and come first as examples.
 export function analyze(events, now = Date.now()) {
   const opens = events.filter((e) => (e.type === 'open' || e.type === 'claude') && e.title);
+  const liked = goods(events);
+  const goodBySource = {};
+  for (const e of liked) goodBySource[e.source] = (goodBySource[e.source] ?? 0) + 1;
   const byCategory = {};
   const bySource = {};
   const keywords = {};
@@ -48,12 +65,21 @@ export function analyze(events, now = Date.now()) {
     byCategory[e.category] = (byCategory[e.category] ?? 0) + 1;
     bySource[e.source] = (bySource[e.source] ?? 0) + 1;
     if (isJapanese(e.title)) ja++;
+  }
+  // Good first, so examples show the articles that were worth it. An opened article that was
+  // also marked Good adds GOOD_WEIGHT - 1 on top of its open.
+  const openedKeys = new Set(opens.map((e) => `${e.category}/${e.id ?? e.link ?? e.title}`));
+  const weighted = [
+    ...liked.map((e) => [e, openedKeys.has(`${e.category}/${e.id ?? e.link ?? e.title}`) ? GOOD_WEIGHT - 1 : GOOD_WEIGHT]),
+    ...opens.map((e) => [e, 1]),
+  ];
+  for (const [e, n] of weighted) {
     if (excluded.has(`${e.category}/${e.source}`)) continue;
-    const w = recency(e.t, now);
+    const w = recency(e.t, now) * n;
     const p = (profile[e.category] ??= {});
     for (const tok of tokenize(e.title)) {
       p[tok] = (p[tok] ?? 0) + w;
-      keywords[tok] = (keywords[tok] ?? 0) + 1;
+      keywords[tok] = (keywords[tok] ?? 0) + n;
       const ex = (examples[tok] ??= []);
       if (ex.length < 3 && !ex.includes(e.title)) ex.push(e.title);
     }
@@ -74,6 +100,9 @@ export function analyze(events, now = Date.now()) {
     jaShare: opens.length ? ja / opens.length : 0.5,
     profile,
     examples,
+    good: liked.length,
+    goodBySource,
+    goodTitles: liked.slice(-5).reverse().map((e) => e.title),
     excludes: events.filter((e) => e.type === 'exclude' || e.type === 'include'),
   };
 }

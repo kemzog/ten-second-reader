@@ -42,7 +42,7 @@ npx serve public   # 記事は GitHub から読むので、⚙︎ にトーク�
 
 - ⚙︎ の設定画面のチェックボックスで、フィードを即時に表示/除外（ページごと）。除外中のフィードは一覧から外れ、下の折りたたみ「除外中のフィード」にまとまる
 - 開いた記事と除外/復帰の操作は、非公開リポジトリ `kemzog/ten-second-reader-data` に保存される
-  - `history/YYYY-MM.jsonl`: 1行1イベント（`type`: `open` / `exclude` / `include`）
+  - `history/YYYY-MM.jsonl`: 1行1イベント（`type`: `open` / `claude` / `good` / `ungood` / `exclude` / `include` / `add` / `dismiss-candidate`）。`good` は記事カードの「Good」（読んで良かった）で、フィード探しでは開いただけの記事の3倍の重みで数える
   - `excluded.json`: カテゴリごとの除外中フィード名（端末間で同期）
 - fine-grained PAT（対象: `ten-second-reader-data` のみ、権限: Contents の Read and write）を ⚙︎ から各端末に1回入力する。記事の表示にも必要
 - トークン未設定のあいだは端末内にためておき、設定後にまとめて送信する

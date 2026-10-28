@@ -34,6 +34,20 @@ function markOpened(id) {
   } catch {}
 }
 
+// Articles marked Good. Per device (the history in the data repo is the record), kept 30 days
+// so the button still shows its state if the article comes back.
+const GOOD_KEY = 'good';
+const good = (() => {
+  try {
+    const o = JSON.parse(localStorage.getItem(GOOD_KEY)) ?? {};
+    const cutoff = Date.now() - 30 * 86400 * 1000;
+    for (const [id, t] of Object.entries(o)) if (!(t >= cutoff)) delete o[id];
+    return o;
+  } catch {
+    return {};
+  }
+})();
+
 let items = [];
 let feeds = [];
 let updated = null;
@@ -73,6 +87,17 @@ function card(item) {
   const meta = document.createElement('div');
   meta.className = 'meta';
   meta.textContent = `${item.source} · ${ago(item.published)}`;
+  const like = document.createElement('button');
+  like.type = 'button';
+  like.className = 'good';
+  like.textContent = 'Good';
+  like.setAttribute('aria-label', '読んで良かった');
+  like.setAttribute('aria-pressed', String(!!good[item.id]));
+  like.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleGood(like, item);
+  });
   const ask = document.createElement('button');
   ask.type = 'button';
   ask.className = 'ask';
@@ -83,7 +108,7 @@ function card(item) {
     e.stopPropagation();
     askClaude(a, item);
   });
-  meta.append(ask);
+  meta.append(like, ask);
   const title = document.createElement('div');
   title.className = 'title';
   title.textContent = item.title;
@@ -110,6 +135,26 @@ function card(item) {
   });
   addSwipe(a, item);
   return a;
+}
+
+// Good = worth reading. Logged to history so feed curation can weigh it; tapping again takes it back.
+function toggleGood(button, item) {
+  const on = !good[item.id];
+  if (on) good[item.id] = Date.now();
+  else delete good[item.id];
+  try {
+    localStorage.setItem(GOOD_KEY, JSON.stringify(good));
+  } catch {}
+  button.setAttribute('aria-pressed', String(on));
+  logEvent({
+    type: on ? 'good' : 'ungood',
+    category: CATEGORY,
+    id: item.id,
+    source: item.source,
+    title: item.title,
+    link: item.link,
+    published: item.published,
+  });
 }
 
 // Open a Claude conversation about the article; counts as reading it.

@@ -1,4 +1,4 @@
-const CACHE = 'tsr-v12';
+const CACHE = 'tsr-v13';
 const SHELL = ['style.css', 'app.js', 'sync.js', 'claude.js', 'icon.svg'];
 
 self.addEventListener('install', (e) => {

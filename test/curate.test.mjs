@@ -92,3 +92,27 @@ test('rank puts fresh picks from the daily analysis first', () => {
   assert.deepEqual(list.map((c) => c.name), ['Pick', 'Match', 'Old pick']);
   assert.equal(list[0].fresh, true);
 });
+
+test('Good articles weigh more in the profile, and ungood takes one back', () => {
+  const good = (id, title, type = 'good') => ({ t: '2026-10-20T10:30:00Z', type, category: 'management', source: 'DHBR', id, title });
+  const ev = [
+    { ...open('management', 'DHBR', '戦略の立て方'), id: 'a' },
+    { ...open('management', 'DHBR', '組織の作り方'), id: 'b' },
+    good('a', '戦略の立て方'),
+  ];
+  const s = analyze(ev, now);
+  assert.equal(s.good, 1);
+  assert.deepEqual(s.goodBySource, { DHBR: 1 });
+  assert.deepEqual(s.goodTitles, ['戦略の立て方']);
+  const p = s.profile.management;
+  assert.ok(Math.abs(p['戦略'] / p['組織'] - 3) < 0.01, `${p['戦略']} vs ${p['組織']}`);
+  const cands = [
+    { name: 'Org', url: 'o', lang: 'ja', tags: ['組織'], note: '' },
+    { name: 'Strategy', url: 's', lang: 'ja', tags: ['戦略'], note: '' },
+  ];
+  assert.deepEqual(rank(cands, 'management', s).map((c) => c.name), ['Strategy', 'Org']);
+
+  const undone = analyze([...ev, good('a', '戦略の立て方', 'ungood')], now);
+  assert.equal(undone.good, 0);
+  assert.ok(Math.abs(undone.profile.management['戦略'] - undone.profile.management['組織']) < 0.01);
+});

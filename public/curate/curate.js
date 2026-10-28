@@ -103,13 +103,19 @@ function renderTrend() {
   }
   const ja = Math.round(stats.jaShare * 100);
   const summary = el('p', 'trend-summary',
-    `${ymd(stats.first)}〜${ymd(stats.last)} に ${stats.total}件 を開いた。日本語 ${ja}% / 英語 ${100 - ja}%`);
+    `${ymd(stats.first)}〜${ymd(stats.last)} に ${stats.total}件 を開いた${stats.good ? `（Good ${stats.good}件）` : ''}。日本語 ${ja}% / 英語 ${100 - ja}%`);
   const cats = Object.fromEntries(Object.entries(stats.byCategory).map(([k, v]) => [label(k), v]));
   const kw = el('div', 'chips');
   for (const [k] of stats.keywords) kw.append(el('span', 'chip', k));
   const ins = insightParts();
   if (ins.length) ins.push(el('h2', null, '数字で見る'));
   const parts = [...ins, summary, el('h2', null, 'カテゴリ'), bars(cats), el('h2', null, 'よく開くサイト'), bars(stats.bySource)];
+  if (stats.good) {
+    // Good weighs more than an open in the keywords and in the ranking below.
+    const recent = el('ul', 'themes');
+    for (const t of stats.goodTitles) recent.append(el('li', null, t));
+    parts.push(el('h2', null, 'Goodしたサイト'), bars(stats.goodBySource), el('h2', null, '最近のGood'), recent);
+  }
   if (stats.keywords.length) parts.push(el('h2', null, 'よく出る言葉'), kw);
   const excluded = new Map();
   for (const e of stats.excludes) {

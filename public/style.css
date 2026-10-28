@@ -98,6 +98,10 @@ footer {
 .chooser .meta { text-align: center; margin-top: 16px; }
 .card .meta { display: flex; align-items: center; gap: 6px; }
 .card.asking { border-color: var(--accent); }
+.good { margin-left: auto; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; padding: 2px 4px; }
+.good[aria-pressed="true"] { color: var(--accent); font-weight: 600; }
+.good[aria-pressed="true"]::before { content: "✓ "; }
+.good + .ask { margin-left: 0; }
 .ask { margin-left: auto; border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; padding: 2px 4px; }
 #open-settings {
   margin-left: auto;
