@@ -200,21 +200,10 @@ function fit(l) {
   // a phrase still too long for the line: let it break anywhere rather than run off the page
   if (wide()) l.classList.add('loose');
 }
-// A home-screen app on iPhone can lay out the fixed body a home-indicator short of the screen,
-// leaving a band under the page. The app always owns the whole screen, so size it to that.
-function fillScreen() {
-  if (!navigator.standalone) return;
-  const portrait = matchMedia('(orientation: portrait)').matches;
-  const h = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
-  if (innerHeight >= h) return;
-  document.body.style.bottom = 'auto';
-  document.body.style.height = `${h}px`;
-}
-fillScreen();
 let resizeTimer = 0;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { fillScreen(); if (pages.length) build(); }, 150);
+  resizeTimer = setTimeout(() => pages.length && build(), 150);
 });
 
 // The leaf hinges on its right edge and lifts toward the reader as the finger pulls its
