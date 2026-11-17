@@ -5,6 +5,7 @@ import {
   setToken,
 } from './sync.js';
 import { claudeUrl } from './claude.js';
+import { splitSource, tidySummary, usableImage } from './images.js';
 
 const CATEGORY = document.body.dataset.category;
 const ITEMS_KEY = `items:${CATEGORY}`;
@@ -35,15 +36,12 @@ let idx = 0; // current page; pages.length = the closing page
 let busy = false; // a turn animation is running
 const turned = new Set(); // read but not yet sent with markSeen
 
-const ago = (iso) => {
-  const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
-  if (m < 60) return `${Math.max(m, 1)}分前`;
-  if (m < 48 * 60) return `${Math.round(m / 60)}時間前`;
-  return `${Math.round(m / 1440)}日前`;
-};
-const ymd = (iso) => {
+// Top-right stamp: date and time once, e.g. "11.17 16:20" (no separate "N時間前").
+const stamp = (iso) => {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '' : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  if (Number.isNaN(d.getTime())) return '';
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getMonth() + 1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 };
 const hhmm = (iso) => new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 // Each source gets its own ink colour, so turning to a new source feels like a new section.
@@ -77,7 +75,8 @@ function leaf(i) {
     l.append(again, el('div', 'shade'));
     return l;
   }
-  l.style.setProperty('--hue', hue(item.source));
+  const { name, topic } = splitSource(item.source);
+  l.style.setProperty('--hue', hue(name));
   const page = el('a', 'page');
   page.href = item.link;
   page.target = '_blank';
@@ -92,9 +91,10 @@ function leaf(i) {
   const head = el('div', 'masthead');
   const label = el('div', 'label');
   label.append(el('span', 'kicker', CATEGORY.toUpperCase()), el('span', 'no-num', String(i + 1).padStart(2, '0')));
-  head.append(label, el('time', 'pubdate', ymd(item.published)));
+  head.append(label, el('time', 'pubdate', stamp(item.published)));
   page.append(head);
-  if (item.image) {
+  const image = usableImage(item.image);
+  if (image) {
     const fig = el('figure', 'photo');
     const img = new Image();
     img.decoding = 'async';
@@ -102,7 +102,7 @@ function leaf(i) {
     img.alt = '';
     img.draggable = false;
     img.addEventListener('error', () => { fig.remove(); l.classList.add('no-photo'); });
-    img.src = item.image;
+    img.src = image;
     fig.append(img);
     page.append(fig);
   } else {
@@ -110,11 +110,13 @@ function leaf(i) {
   }
   const body = el('div', 'body');
   const byline = el('div', 'byline');
-  byline.append(el('span', 'source', item.source), el('span', 'ago', ago(item.published)));
-  // Japanese titles get 『』 like a quoted headline; others stay as they are.
-  const jp = /[\u3040-\u30ff\u4e00-\u9fff]/.test(item.title) && !/^『.*』$/.test(item.title);
-  body.append(byline, el('h1', jp ? 'headline quoted' : 'headline', jp ? `『${item.title}』` : item.title));
-  if (item.summary) body.append(el('span', 'rule'), el('p', 'dek', item.summary));
+  byline.append(el('span', 'source', name));
+  if (topic) byline.append(el('span', 'topic', topic));
+  // 『』 only on short Japanese titles that carry no brackets of their own.
+  const quoted = /[\u3040-\u30ff\u4e00-\u9fff]/.test(item.title) && item.title.length <= 24 && !/[「」『』]/.test(item.title);
+  body.append(byline, el('h1', 'headline', quoted ? `『${item.title}』` : item.title));
+  const dek = tidySummary(item.summary);
+  if (dek) body.append(el('span', 'rule'), el('p', 'dek', dek));
   page.append(body);
   const like = el('button', 'good');
   like.type = 'button';
@@ -131,7 +133,8 @@ function leaf(i) {
     event('claude', item);
   });
   const foot = el('div', 'foot');
-  foot.append(el('span', 'date', `${i + 1} / ${pages.length}`), like, ask);
+  const left = pages.length - i - 1;
+  foot.append(el('span', 'date', left ? `残り${left}本` : '最後の1本'), like, ask);
   l.append(page, foot, el('div', 'cross l'), el('div', 'cross r'), el('div', 'shade'));
   return l;
 }
