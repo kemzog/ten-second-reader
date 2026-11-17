@@ -172,7 +172,7 @@ function build() {
 function fit(l) {
   const body = l.querySelector('.body');
   if (!body) return;
-  const over = () => body.scrollHeight > body.clientHeight + 1;
+  const over = () => body.scrollHeight > body.clientHeight;
   const fig = l.querySelector('.photo');
   if (over() && fig) fig.classList.add('small');
   if (over() && fig) { fig.hidden = true; l.classList.add('no-photo'); }
