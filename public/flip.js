@@ -132,7 +132,7 @@ function leaf(i) {
   });
   const foot = el('div', 'foot');
   foot.append(el('span', 'date', `${i + 1} / ${pages.length}`), like, ask);
-  l.append(page, foot, el('div', 'shade'));
+  l.append(page, foot, el('div', 'cross l'), el('div', 'cross r'), el('div', 'shade'));
   return l;
 }
 
@@ -251,12 +251,11 @@ function sendTurned() {
 
 const bar = document.querySelector('.bar');
 let barShown = false;
-const barShift = () => bar.offsetHeight - (parseFloat(getComputedStyle(document.body).paddingTop) || 0);
+const barShift = () => bar.offsetHeight;
 function reveal(r) {
   r = Math.min(Math.max(r, 0), 1);
   if (drag) drag.r = r;
   bar.style.transform = `translateY(${(r - 1) * 100}%)`;
-  book.style.transform = `translateY(${r * barShift()}px)`;
 }
 function setBar(on) {
   barShown = on;
