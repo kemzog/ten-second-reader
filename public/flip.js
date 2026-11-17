@@ -247,6 +247,23 @@ function sendTurned() {
   turned.clear();
 }
 
+// --- the top bar (progress, update time, settings): hidden until pulled down ---
+
+const bar = document.querySelector('.bar');
+let barShown = false;
+const barShift = () => bar.offsetHeight - (parseFloat(getComputedStyle(document.body).paddingTop) || 0);
+function reveal(r) {
+  r = Math.min(Math.max(r, 0), 1);
+  if (drag) drag.r = r;
+  bar.style.transform = `translateY(${(r - 1) * 100}%)`;
+  book.style.transform = `translateY(${r * barShift()}px)`;
+}
+function setBar(on) {
+  barShown = on;
+  document.body.classList.add('revealing');
+  reveal(on ? 1 : 0);
+}
+
 // --- touch / mouse drag ---
 
 let drag = null;
@@ -260,12 +277,24 @@ book.addEventListener('pointerdown', (e) => {
 window.addEventListener('pointermove', (e) => {
   if (!drag) return;
   const dx = e.clientX - drag.x0;
-  if (!drag.dir) {
-    if (Math.abs(dx) < 8) return;
-    if (Math.abs(e.clientY - drag.y0) > Math.abs(dx)) { drag = null; return; }
-    drag.dir = dx > 0 ? 1 : -1; // swipe right = next page
-    if (!canTurn(drag.dir)) drag.dir = 0;
+  if (!drag.dir && !drag.vert && !drag.locked) {
+    const dy = e.clientY - drag.y0;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
+    drag.locked = true;
     dragged = true;
+    if (Math.abs(dy) > Math.abs(dx)) {
+      // Vertical: pull down to reveal the bar, push up to tuck it away.
+      drag.vert = true;
+      drag.r0 = barShown ? 1 : 0;
+      document.body.classList.remove('revealing');
+    } else {
+      drag.dir = dx > 0 ? 1 : -1; // swipe right = next page
+      if (!canTurn(drag.dir)) drag.dir = 0;
+    }
+  }
+  if (drag.vert) {
+    reveal(drag.r0 + (e.clientY - drag.y0) / (barShift() * 1.6));
+    return;
   }
   const dt = e.timeStamp - drag.t;
   if (dt > 0) drag.v = 0.8 * ((e.clientX - drag.x) / dt) + 0.2 * drag.v;
@@ -286,6 +315,13 @@ window.addEventListener('pointermove', (e) => {
 });
 function release() {
   if (!drag) return;
+  if (drag.vert) {
+    const r = drag.r ?? drag.r0;
+    drag = null;
+    setBar(r > (barShown ? 0.7 : 0.3));
+    setTimeout(() => (dragged = false));
+    return;
+  }
   const { dir, p, v } = drag;
   cancelAnimationFrame(drag.raf);
   drag = null;

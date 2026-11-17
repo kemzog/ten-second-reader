@@ -37,24 +37,30 @@ body {
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
 }
+/* The bar is tucked away above the screen; pulling the page down reveals it (flip.js). */
 .bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  transform: translateY(-100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 18px 6px;
+  padding: calc(10px + env(safe-area-inset-top)) max(18px, calc(50% - 322px)) 8px;
   font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
   color: var(--ink-soft);
-  max-width: 680px;
-  width: 100%;
-  margin: 0 auto;
 }
+.bar, #book { will-change: transform; }
+.revealing .bar, .revealing #book { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
 #progress { font-weight: 600; color: var(--ink); }
 #open-settings { border: 0; background: none; color: var(--ink-soft); font-size: 15px; margin-left: 8px; padding: 2px 4px; }
 
 #book {
   position: relative;
   flex: 1;
-  margin: 4px 12px 12px;
+  margin: 10px 12px 12px;
   perspective: 1500px;
   touch-action: none;
   user-select: none;
