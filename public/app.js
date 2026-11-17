@@ -101,7 +101,7 @@ function card(item) {
   const ask = document.createElement('button');
   ask.type = 'button';
   ask.className = 'ask';
-  ask.textContent = 'Claude';
+  ask.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 5.5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-9l-4.5 3.5v-3.5H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><circle cx="8.5" cy="11.5" r="1.1"/><circle cx="12" cy="11.5" r="1.1"/><circle cx="15.5" cy="11.5" r="1.1"/></svg>';
   ask.setAttribute('aria-label', 'この記事についてClaudeと話す');
   ask.addEventListener('click', (e) => {
     e.preventDefault();
