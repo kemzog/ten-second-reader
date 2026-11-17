@@ -152,10 +152,28 @@ function build() {
   if (nextLeaf) nextLeaf.classList.add('next');
   curLeaf.classList.add('cur');
   book.replaceChildren(...[nextLeaf, curLeaf, prevLeaf].filter(Boolean));
+  for (const l of [curLeaf, nextLeaf, prevLeaf]) if (l) fit(l);
   $('progress').textContent = idx < pages.length ? `あと${pages.length - idx}本` : '';
   $('prev').disabled = idx === 0;
   $('next').disabled = idx >= pages.length;
 }
+
+// Make the whole title and summary fit on the page: first a smaller photo, then no photo,
+// then smaller type (down to 75%).
+function fit(l) {
+  const body = l.querySelector('.body');
+  if (!body) return;
+  const over = () => body.scrollHeight > body.clientHeight + 1;
+  const fig = l.querySelector('.photo');
+  if (over() && fig) fig.classList.add('small');
+  if (over() && fig) { fig.hidden = true; l.classList.add('no-photo'); }
+  for (let n = 19; over() && n >= 15; n--) l.style.setProperty('--fit', String(n / 20));
+}
+let resizeTimer = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => pages.length && build(), 150);
+});
 
 // The leaf hinges on its right edge and lifts toward the reader as the finger pulls its
 // left edge to the right. The free edge follows the finger: its distance from the hinge is W·cos(angle).
