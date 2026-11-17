@@ -41,6 +41,10 @@ const ago = (iso) => {
   if (m < 48 * 60) return `${Math.round(m / 60)}時間前`;
   return `${Math.round(m / 1440)}日前`;
 };
+const ymd = (iso) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+};
 const hhmm = (iso) => new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 // Each source gets its own ink colour, so turning to a new source feels like a new section.
 const hue = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
@@ -83,11 +87,12 @@ function leaf(i) {
     if (dragged) { e.preventDefault(); return; }
     event('open', item);
   });
-  // Masthead: source on the left, issue-style page number on the right, a rule beneath.
+  // Index-style head, like a magazine's contents list: LABEL + serial number on the left,
+  // the date on the right, a rule beneath.
   const head = el('div', 'masthead');
-  const no = el('div', 'no');
-  no.append(el('span', 'no-label', 'NO.'), el('span', 'no-num', String(i + 1).padStart(2, '0')));
-  head.append(el('div', 'kicker', item.source), no);
+  const label = el('div', 'label');
+  label.append(el('span', 'kicker', CATEGORY.toUpperCase()), el('span', 'no-num', String(i + 1).padStart(2, '0')));
+  head.append(label, el('time', 'pubdate', ymd(item.published)));
   page.append(head);
   if (item.image) {
     const fig = el('figure', 'photo');
@@ -104,7 +109,11 @@ function leaf(i) {
     l.classList.add('no-photo');
   }
   const body = el('div', 'body');
-  body.append(el('h1', 'headline', item.title));
+  const byline = el('div', 'byline');
+  byline.append(el('span', 'source', item.source), el('span', 'ago', ago(item.published)));
+  // Japanese titles get 『』 like a quoted headline; others stay as they are.
+  const jp = /[\u3040-\u30ff\u4e00-\u9fff]/.test(item.title) && !/^『.*』$/.test(item.title);
+  body.append(byline, el('h1', jp ? 'headline quoted' : 'headline', jp ? `『${item.title}』` : item.title));
   if (item.summary) body.append(el('span', 'rule'), el('p', 'dek', item.summary));
   page.append(body);
   const like = el('button', 'good');
@@ -122,7 +131,7 @@ function leaf(i) {
     event('claude', item);
   });
   const foot = el('div', 'foot');
-  foot.append(el('span', 'date', `${ago(item.published)} · ${i + 1} / ${pages.length}`), like, ask);
+  foot.append(el('span', 'date', `${i + 1} / ${pages.length}`), like, ask);
   l.append(page, foot, el('div', 'shade'));
   return l;
 }
