@@ -78,6 +78,7 @@ function leaf(i) {
   page.href = item.link;
   page.target = '_blank';
   page.rel = 'noopener';
+  page.draggable = false; // a native link drag would cancel the page turn on PC
   page.addEventListener('click', (e) => {
     if (dragged) { e.preventDefault(); return; }
     event('open', item);
@@ -249,6 +250,7 @@ function release() {
   setTimeout(() => (dragged = false));
 }
 window.addEventListener('pointerup', release);
+book.addEventListener('dragstart', (e) => e.preventDefault());
 window.addEventListener('pointercancel', release);
 
 // --- keyboard, wheel and buttons for PC ---
