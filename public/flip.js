@@ -101,7 +101,7 @@ function leaf(i) {
     img.referrerPolicy = 'no-referrer'; // some sites refuse hotlinked images with a foreign referrer
     img.alt = '';
     img.draggable = false;
-    img.addEventListener('error', () => { fig.remove(); l.classList.add('no-photo'); });
+    img.addEventListener('error', () => { fig.remove(); l.classList.add('no-photo'); fit(l); });
     img.src = image;
     fig.append(img);
     page.append(fig);
@@ -179,6 +179,15 @@ function fit(l) {
   const fig = l.querySelector('.photo');
   if (over() && fig) fig.classList.add('small');
   if (over() && fig) { fig.hidden = true; l.classList.add('no-photo'); }
+  // a page without a photo: the title grows to fill the page, from 3.6x down to 1.1x
+  if (l.classList.contains('no-photo')) {
+    const head = l.querySelector('.headline');
+    const wide = () => head.scrollWidth > head.clientWidth;
+    for (let n = 36; n >= 11; n--) {
+      l.style.setProperty('--big', String(n / 10));
+      if (!over() && !wide()) break;
+    }
+  }
   for (let n = 19; over() && n >= 15; n--) l.style.setProperty('--fit', String(n / 20));
 }
 let resizeTimer = 0;

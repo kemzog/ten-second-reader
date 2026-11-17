@@ -1,6 +1,8 @@
 /* Paper-like magazine pages: muted warm stock with fibre grain, ink that is not pure black,
    the iPhone system font (San Francisco + Hiragino Sans), thin rules between blocks, and something anchored in every corner. */
 :root {
+  /* always printed paper, also in dark mode: a bound book is never black */
+  color-scheme: light;
   --desk: #d9d2c3;
   --paper: #f2ede2;
   --ink: #2b2723;
@@ -12,18 +14,6 @@
   --grain-a: .10;
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .27 0 0 0 0 .2 0 0 0 .9 -.36'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .09' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .27 0 0 0 .5 -.22'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --desk: #12110f;
-    --paper: #24211d;
-    --ink: #e8e1d3;
-    --ink-soft: #a39a8b;
-    --rule: #4a443b;
-    --accent: #7fb0f0;
-    --heart: #f0708a;
-    --kicker-l: 70%;
-  }
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--desk); color: var(--ink); overflow: hidden; }
@@ -93,9 +83,6 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-@media (prefers-color-scheme: dark) {
-  .leaf { background-blend-mode: soft-light, soft-light; box-shadow: 0 10px 26px rgb(0 0 0 / .5); }
 }
 .leaf.next { transform: scale(.965); }
 .leaf::before {
@@ -174,9 +161,6 @@ body {
   filter: sepia(.18) saturate(.82) contrast(.94) brightness(1.02);
   mix-blend-mode: multiply;
 }
-@media (prefers-color-scheme: dark) {
-  .photo img { mix-blend-mode: normal; filter: sepia(.15) saturate(.8) brightness(.88); }
-}
 
 .body {
   flex: 1;
@@ -201,7 +185,20 @@ body {
   text-wrap: pretty;
   word-break: auto-phrase;
 }
-.no-photo .headline { font-size: calc(22px * var(--fit, 1)); }
+/* Text-only pages are set like a typographic magazine spread: the title itself fills the
+   space a photo would take (flip.js picks --big, as large as still fits), the serial number
+   becomes a display numeral, and the title sits high with the summary below it. */
+.no-photo .headline {
+  font-size: calc(20px * var(--big, 1.1) * var(--fit, 1));
+  line-height: 1.28;
+  letter-spacing: -.005em;
+  overflow-wrap: anywhere;
+}
+.no-photo .no-num { font-size: max(64px, 19cqw); font-weight: 100; letter-spacing: -.03em; }
+.no-photo .body { padding-top: 6cqw; }
+.no-photo .body > :first-child { margin-top: 0; }
+.no-photo .rule { width: 40px; margin: auto 0 16px; background: var(--ink); }
+.no-photo .headline { margin-bottom: 22px; }
 .rule { display: block; width: 24px; height: 1px; background: var(--ink-soft); margin: 14px 0; flex: none; }
 .dek {
   font-size: calc(14px * var(--fit, 1));
