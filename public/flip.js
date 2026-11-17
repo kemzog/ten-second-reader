@@ -5,7 +5,7 @@ import {
   setToken,
 } from './sync.js';
 import { claudeUrl } from './claude.js';
-import { splitSource, tidySummary, usableImage } from './images.js';
+import { splitSource, tidySummary, usableImage, phrases } from './images.js';
 
 const CATEGORY = document.body.dataset.category;
 const ITEMS_KEY = `items:${CATEGORY}`;
@@ -114,7 +114,13 @@ function leaf(i) {
   if (topic) byline.append(el('span', 'topic', topic));
   // 『』 only on short Japanese titles that carry no brackets of their own.
   const quoted = /[\u3040-\u30ff\u4e00-\u9fff]/.test(item.title) && item.title.length <= 24 && !/[「」『』]/.test(item.title);
-  body.append(byline, el('h1', 'headline', quoted ? `『${item.title}』` : item.title));
+  const head1 = el('h1', 'headline');
+  // wrap only between phrases (Safari has no word-break: auto-phrase)
+  phrases(quoted ? `『${item.title}』` : item.title).forEach((p, n) => {
+    if (n) head1.append(document.createElement('wbr'));
+    head1.append(p);
+  });
+  body.append(byline, head1);
   const dek = tidySummary(item.summary);
   if (dek) body.append(el('span', 'rule'), el('p', 'dek', dek));
   page.append(body);
@@ -176,24 +182,39 @@ function fit(l) {
   const body = l.querySelector('.body');
   if (!body) return;
   const over = () => body.scrollHeight > body.clientHeight;
+  const head = l.querySelector('.headline');
+  const wide = () => head.scrollWidth > head.clientWidth;
+  l.classList.remove('loose');
+  l.style.removeProperty('--fit');
   const fig = l.querySelector('.photo');
   if (over() && fig) fig.classList.add('small');
   if (over() && fig) { fig.hidden = true; l.classList.add('no-photo'); }
-  // a page without a photo: the title grows to fill the page, from 3.6x down to 1.1x
+  // a page without a photo: the title is set in one of three display sizes, the largest that fits
   if (l.classList.contains('no-photo')) {
-    const head = l.querySelector('.headline');
-    const wide = () => head.scrollWidth > head.clientWidth;
-    for (let n = 36; n >= 11; n--) {
-      l.style.setProperty('--big', String(n / 10));
+    for (const big of [2.4, 1.75, 1.25]) {
+      l.style.setProperty('--big', String(big));
       if (!over() && !wide()) break;
     }
   }
-  for (let n = 19; over() && n >= 15; n--) l.style.setProperty('--fit', String(n / 20));
+  for (let n = 19; (over() || wide()) && n >= 15; n--) l.style.setProperty('--fit', String(n / 20));
+  // a phrase still too long for the line: let it break anywhere rather than run off the page
+  if (wide()) l.classList.add('loose');
 }
+// A home-screen app on iPhone can lay out the fixed body a home-indicator short of the screen,
+// leaving a band under the page. The app always owns the whole screen, so size it to that.
+function fillScreen() {
+  if (!navigator.standalone) return;
+  const portrait = matchMedia('(orientation: portrait)').matches;
+  const h = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+  if (innerHeight >= h) return;
+  document.body.style.bottom = 'auto';
+  document.body.style.height = `${h}px`;
+}
+fillScreen();
 let resizeTimer = 0;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => pages.length && build(), 150);
+  resizeTimer = setTimeout(() => { fillScreen(); if (pages.length) build(); }, 150);
 });
 
 // The leaf hinges on its right edge and lifts toward the reader as the finger pulls its

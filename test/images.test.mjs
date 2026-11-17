@@ -23,3 +23,10 @@ test('splitSource separates the feed topic from the publication', () => {
   assert.deepEqual(splitSource('Qiita タグ: Claude Code'), { name: 'Qiita', topic: 'Claude Code' });
   assert.deepEqual(splitSource('DHBR'), { name: 'DHBR', topic: '' });
 });
+
+test('phrases: wraps between bunsetsu only', async () => {
+  const { phrases } = await import('../public/images.js');
+  assert.deepEqual(phrases('AIエージェントの「完了しました」を信用しない仕組みを作った'),
+    ['AIエージェントの', '「完了しました」を', '信用しない', '仕組みを', '作った']);
+  assert.deepEqual(phrases(''), []);
+});
