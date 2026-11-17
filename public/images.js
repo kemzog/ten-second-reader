@@ -46,8 +46,8 @@ export function splitSource(source) {
 const HIRA = /^[ぁ-ゟ]/;
 const WORD_END = /[A-Za-z0-9゠-ヿ一-鿿々〆＋+#]$/;
 const WORD_START = /^[A-Za-z0-9゠-ヿ一-鿿々〆＋+#]/;
-const NO_BREAK_BEFORE = /^[、。，．・：；！？!?)）」』】〕〉》ー\s:;,.]/;
-const NO_BREAK_AFTER = /[（(「『【〔〈《]$/;
+const NO_BREAK_BEFORE = /^[、。，．・：；！？!?)）」』】〕〉》ー”’\s:;,.]/;
+const NO_BREAK_AFTER = /[（(「『【〔〈《“‘]\s*$/;
 export function phrases(text) {
   if (!text || typeof Intl === 'undefined' || !Intl.Segmenter) return text ? [text] : [];
   const out = [];

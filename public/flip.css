@@ -109,7 +109,7 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: calc(24px + env(safe-area-inset-top)) var(--gutter) 0;
+  padding: calc(40px + env(safe-area-inset-top)) var(--gutter) 0;
   color: inherit;
   text-decoration: none;
   -webkit-touch-callout: none;
@@ -157,10 +157,14 @@ body {
 .photo img {
   display: block;
   width: 100%;
-  height: min(30vh, 260px);
+  /* the picture's own proportions (flip.js sets them on load), so a wide card or slide is never
+     cropped; only a tall picture is trimmed to the cap */
+  height: auto;
+  aspect-ratio: 1.91 / 1;
+  max-height: min(34vh, 300px);
   object-fit: cover;
-  /* printed look: ink sits in the paper */
-  filter: saturate(.85) contrast(.96);
+  /* printed look: muted colour, ink sits in the paper */
+  filter: saturate(.6) contrast(.95);
   mix-blend-mode: multiply;
 }
 
@@ -172,11 +176,11 @@ body {
   align-items: flex-start;
   text-align: left;
   overflow: hidden;
-  padding: 16px 0 8px;
+  padding: 20px 0 8px;
 }
 /* Nothing is clamped: flip.js shrinks the photo, then the type, until the whole text fits.
    Auto margins centre the text when it fits and let it overflow downward (measurable) when not. */
-.body > :first-child { margin-top: auto; }
+.body > :first-child { margin-top: 0; } /* text hangs from the photo; spare room goes below */
 .body > :last-child { margin-bottom: auto; }
 .headline {
   font-size: calc(20px * var(--fit, 1));
@@ -201,10 +205,9 @@ body {
   line-height: 1.28;
   letter-spacing: -.005em;
 }
-.no-photo .no-num { font-size: max(64px, 19cqw); font-weight: 100; letter-spacing: -.03em; line-height: .78; }
-.no-photo .page { padding-top: calc(40px + env(safe-area-inset-top)); }
+/* the serial numeral is the same on every page, so it stays put as pages turn */
+.no-num { font-size: max(64px, 19cqw); font-weight: 100; letter-spacing: -.03em; line-height: .78; }
 .no-photo .body { padding-top: 6cqw; }
-.no-photo .body > :first-child { margin-top: 0; }
 .no-photo .rule { width: 40px; margin: 22px 0 14px; background: var(--ink); }
 .rule { display: block; width: 24px; height: 1px; background: var(--ink-soft); margin: 14px 0; flex: none; }
 .dek {
@@ -222,7 +225,7 @@ body {
 }
 .byline .source { font-weight: 700; color: hsl(var(--hue) 45% var(--kicker-l)); letter-spacing: .04em; }
 .byline .topic { color: var(--ink-soft); font-size: .92em; }
-.photo.small img { height: min(18vh, 160px); }
+.photo.small img { max-height: min(18vh, 160px); }
 
 /* foot: date bottom-left, actions bottom-right, rule above */
 .foot {

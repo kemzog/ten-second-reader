@@ -30,3 +30,8 @@ test('phrases: wraps between bunsetsu only', async () => {
     ['AIエージェントの', '「完了しました」を', '信用しない', '仕組みを', '作った']);
   assert.deepEqual(phrases(''), []);
 });
+
+test('phrases: no break inside curly quotes', async () => {
+  const { phrases } = await import('../public/images.js');
+  assert.ok(phrases('Agent “haro”に任せたら').includes('“haro”に'));
+});
