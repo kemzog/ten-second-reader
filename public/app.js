@@ -90,7 +90,7 @@ function card(item) {
   const like = document.createElement('button');
   like.type = 'button';
   like.className = 'good';
-  like.textContent = 'Good';
+  like.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8.1 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.9 1.3-1.8 2.9-2.9 4.9-2.9 3.5 0 5.6 3.6 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>';
   like.setAttribute('aria-label', '読んで良かった');
   like.setAttribute('aria-pressed', String(!!good[item.id]));
   like.addEventListener('click', (e) => {
