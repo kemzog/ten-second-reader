@@ -6,6 +6,7 @@
   --line: #e6e6e1;
   --accent: #1f6feb;
   --accent-fg: #ffffff;
+  --heart: #e0245e;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -16,6 +17,7 @@
     --line: #2a2a2a;
     --accent: #58a6ff;
     --accent-fg: #0b0b0b;
+    --heart: #f4568a;
   }
 }
 * { box-sizing: border-box; }
@@ -98,9 +100,10 @@ footer {
 .chooser .meta { text-align: center; margin-top: 16px; }
 .card .meta { display: flex; align-items: center; gap: 6px; }
 .card.asking { border-color: var(--accent); }
-.good { margin-left: auto; border: 0; background: none; color: var(--muted); font: inherit; font-size: 12px; padding: 2px 4px; }
-.good[aria-pressed="true"] { color: var(--accent); font-weight: 600; }
-.good[aria-pressed="true"]::before { content: "✓ "; }
+.good { margin-left: auto; border: 0; background: none; color: var(--muted); padding: 2px 4px; line-height: 0; cursor: pointer; }
+.good svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.good[aria-pressed="true"] { color: var(--heart); }
+.good[aria-pressed="true"] svg { fill: currentColor; }
 .good + .ask { margin-left: 0; }
 .ask { margin-left: auto; border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; padding: 2px 4px; }
 #open-settings {
