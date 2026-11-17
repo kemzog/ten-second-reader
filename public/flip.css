@@ -7,6 +7,7 @@
   --paper: #f2ede2;
   --ink: #2b2723;
   --ink-soft: #6f675c;
+  --ink-dek: #514a40;
   --rule: #b9ae9a;
   --accent: #1f5fbf;
   --heart: #c8324f;
@@ -118,7 +119,8 @@ body {
 .masthead {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  /* label, numeral and date share one baseline */
+  align-items: last baseline;
   padding-bottom: 10px;
   border-bottom: 1px solid var(--rule);
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
@@ -183,8 +185,14 @@ body {
   margin: 0;
   letter-spacing: .01em;
   text-wrap: pretty;
-  word-break: auto-phrase;
+  /* wrap only at the <wbr> flip.js puts between phrases; proportional kana and brackets as in print */
+  word-break: keep-all;
+  overflow-wrap: normal;
+  align-self: stretch; /* the column width, not its longest phrase, so overflow is measurable */
+  font-feature-settings: "palt";
+  hanging-punctuation: first allow-end;
 }
+.loose .headline { overflow-wrap: anywhere; }
 /* Text-only pages are set like a typographic magazine spread: the title itself fills the
    space a photo would take (flip.js picks --big, as large as still fits), the serial number
    becomes a display numeral, and the title sits high with the summary below it. */
@@ -192,18 +200,17 @@ body {
   font-size: calc(20px * var(--big, 1.1) * var(--fit, 1));
   line-height: 1.28;
   letter-spacing: -.005em;
-  overflow-wrap: anywhere;
 }
-.no-photo .no-num { font-size: max(64px, 19cqw); font-weight: 100; letter-spacing: -.03em; }
+.no-photo .no-num { font-size: max(64px, 19cqw); font-weight: 100; letter-spacing: -.03em; line-height: .78; }
+.no-photo .page { padding-top: calc(40px + env(safe-area-inset-top)); }
 .no-photo .body { padding-top: 6cqw; }
 .no-photo .body > :first-child { margin-top: 0; }
-.no-photo .rule { width: 40px; margin: auto 0 16px; background: var(--ink); }
-.no-photo .headline { margin-bottom: 22px; }
+.no-photo .rule { width: 40px; margin: 22px 0 14px; background: var(--ink); }
 .rule { display: block; width: 24px; height: 1px; background: var(--ink-soft); margin: 14px 0; flex: none; }
 .dek {
   font-size: calc(14px * var(--fit, 1));
   line-height: 1.7;
-  color: var(--ink-soft);
+  color: var(--ink-dek);
   margin: 0;
 }
 .byline {
@@ -246,8 +253,9 @@ body {
 .foot svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
 .good[aria-pressed="true"] { color: var(--heart); }
 .good[aria-pressed="true"] svg { fill: currentColor; }
-.ask { color: var(--accent) !important; }
+/* one colour on the page (the source name); the actions stay in ink */
 .ask svg circle { fill: currentColor; stroke: none; }
+.foot button:last-child { margin-right: -11px; }
 
 .leaf.end { justify-content: center; align-items: center; text-align: center; padding: 24px; }
 .end-mark { font-size: 48px; margin: 0; color: var(--ink-soft); }
@@ -315,5 +323,5 @@ dialog a { color: var(--accent); }
 
 /* Phones: the page is the whole screen, so paint the root as paper too. */
 @media (max-width: 719px) {
-  html, body { background: var(--paper); }
+  html, body { background-color: var(--paper); background-image: var(--grain), var(--fibre); }
 }

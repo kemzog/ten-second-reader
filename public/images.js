@@ -38,3 +38,26 @@ export function splitSource(source) {
   const m = /^(.+?)\s*(?:トピック|タグ|topic|tag)\s*[:：]\s*(.+)$/i.exec(source ?? '');
   return m ? { name: m[1].trim(), topic: m[2].trim() } : { name: source ?? '', topic: '' };
 }
+
+// Split a Japanese title into phrases (bunsetsu-like chunks) so a headline only wraps between
+// them: never inside a word, never before a particle, closing bracket or punctuation, never
+// after an opening bracket. Safari has no `word-break: auto-phrase`, so flip.js puts <wbr>
+// between these chunks and sets `word-break: keep-all`.
+const HIRA = /^[ぁ-ゟ]/;
+const WORD_END = /[A-Za-z0-9゠-ヿ一-鿿々〆＋+#]$/;
+const WORD_START = /^[A-Za-z0-9゠-ヿ一-鿿々〆＋+#]/;
+const NO_BREAK_BEFORE = /^[、。，．・：；！？!?)）」』】〕〉》ー\s:;,.]/;
+const NO_BREAK_AFTER = /[（(「『【〔〈《]$/;
+export function phrases(text) {
+  if (!text || typeof Intl === 'undefined' || !Intl.Segmenter) return text ? [text] : [];
+  const out = [];
+  for (const { segment } of new Intl.Segmenter('ja', { granularity: 'word' }).segment(text)) {
+    const prev = out[out.length - 1];
+    // a break is allowed only after kana/punctuation/space and before the start of a new word
+    const join = prev != null && (HIRA.test(segment) || NO_BREAK_BEFORE.test(segment) ||
+      NO_BREAK_AFTER.test(prev) || (WORD_END.test(prev) && WORD_START.test(segment)));
+    if (join) out[out.length - 1] = prev + segment;
+    else out.push(segment);
+  }
+  return out;
+}
