@@ -31,7 +31,9 @@ body {
   font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  /* fixed to the whole screen: in a home-screen app 100dvh stops short of the home indicator */
+  position: fixed;
+  inset: 0;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
@@ -215,7 +217,7 @@ body {
   font-size: calc(12px * var(--fit, 1));
 }
 .byline .source { font-weight: 700; color: hsl(var(--hue) 45% var(--kicker-l)); letter-spacing: .04em; }
-.byline .ago { color: var(--ink-soft); font-size: .92em; }
+.byline .topic { color: var(--ink-soft); font-size: .92em; }
 .photo.small img { height: min(18vh, 160px); }
 
 /* foot: date bottom-left, actions bottom-right, rule above */
@@ -313,3 +315,8 @@ dialog a { color: var(--accent); }
 .cross::before, .cross::after { content: ""; position: absolute; background: currentColor; }
 .cross::before { left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -.5px; }
 .cross::after { top: 50%; left: 0; right: 0; height: 1px; margin-top: -.5px; }
+
+/* Phones: the page is the whole screen, so paint the root as paper too. */
+@media (max-width: 719px) {
+  html, body { background: var(--paper); }
+}

@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
+import { tidySummary, usableImage } from '../public/images.js';
 
 const SUMMARY_LEN = 160;
 
@@ -128,7 +129,7 @@ export function parseFeed(xml, source, feed = {}) {
       const link = absolute(r.link.trim(), base);
       let summary = cleanText(r.summary);
       if (summary === title) summary = '';
-      if (summary.length > SUMMARY_LEN) summary = summary.slice(0, SUMMARY_LEN) + '…';
+      summary = tidySummary(summary, SUMMARY_LEN);
       const t = Date.parse(text(r.date));
       return {
         id: createHash('sha1').update(r.guid || link || title).digest('hex').slice(0, 12),
@@ -136,7 +137,7 @@ export function parseFeed(xml, source, feed = {}) {
         summary,
         link,
         source,
-        image: httpsUrl(r.image, link),
+        image: usableImage(httpsUrl(r.image, link)),
         published: Number.isNaN(t) ? null : new Date(t).toISOString(),
       };
     })
@@ -178,7 +179,7 @@ async function fillImages(items, prev) {
   const todo = [];
   for (const i of items) {
     if (i.image) continue;
-    if (known.has(i.id)) i.image = known.get(i.id);
+    if (known.has(i.id)) i.image = usableImage(known.get(i.id));
     else todo.push(i);
   }
   const worker = async () => {
@@ -188,7 +189,7 @@ async function fillImages(items, prev) {
           headers: { 'user-agent': 'Mozilla/5.0 (compatible; ten-second-reader)' },
           signal: AbortSignal.timeout(8_000),
         });
-        item.image = res.ok ? httpsUrl(pageImage((await res.text()).slice(0, 300_000)), item.link) : '';
+        item.image = res.ok ? usableImage(httpsUrl(pageImage((await res.text()).slice(0, 300_000)), item.link)) : '';
       } catch {
         item.image = '';
       }
