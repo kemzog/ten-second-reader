@@ -102,6 +102,10 @@ function leaf(i) {
     img.alt = '';
     img.draggable = false;
     img.addEventListener('error', () => { fig.remove(); l.classList.add('no-photo'); fit(l); });
+    img.addEventListener('load', () => {
+      if (img.naturalWidth && img.naturalHeight) img.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+      if (l.isConnected) fit(l);
+    });
     img.src = image;
     fig.append(img);
     page.append(fig);
@@ -187,6 +191,7 @@ function fit(l) {
   l.classList.remove('loose');
   l.style.removeProperty('--fit');
   const fig = l.querySelector('.photo');
+  if (fig) { fig.hidden = false; fig.classList.remove('small'); l.classList.remove('no-photo'); }
   if (over() && fig) fig.classList.add('small');
   if (over() && fig) { fig.hidden = true; l.classList.add('no-photo'); }
   // a page without a photo: the title is set in one of three display sizes, the largest that fits
