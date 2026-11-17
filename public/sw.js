@@ -1,5 +1,5 @@
-const CACHE = 'tsr-v15';
-const SHELL = ['style.css', 'app.js', 'sync.js', 'claude.js', 'icon.svg'];
+const CACHE = 'tsr-v16';
+const SHELL = ['style.css', 'app.js', 'sync.js', 'claude.js', 'flip.js', 'flip.css', 'icon.svg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
