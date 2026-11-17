@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="10秒 めくり">
+<title>10秒 マネジメント めくり</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="stylesheet" href="../flip.css">
+</head>
+<body data-category="management">
+<header class="bar">
+  <span id="progress"></span>
+  <span>
+    <span id="updated"></span>
+    <button id="open-settings" type="button" aria-label="設定">⚙︎</button>
+  </span>
+</header>
+<main id="book" aria-live="polite"></main>
+<button class="nav prev" id="prev" type="button" aria-label="前のページ">‹</button>
+<button class="nav next" id="next" type="button" aria-label="次のページ">›</button>
+<dialog id="settings">
+  <form method="dialog">
+    <h2>トークン</h2>
+    <p class="hint">記事は非公開リポジトリ（ten-second-reader-data）にあり、このトークンがある端末でだけ表示されます。ホーム画面に追加したアプリはSafariと保存場所が別なので、ここでも設定が必要です。</p>
+    <input id="token" type="password" placeholder="GitHubトークン" autocomplete="off">
+    <button id="save-token" type="button">保存して同期</button>
+    <p id="sync-status" class="hint"></p>
+    <p class="hint">操作: 左右にスワイプでめくる／タップで記事を開く。PCは ← → キー、Enterで開く、Lでハート。</p>
+    <p class="hint"><a href="../management/">一覧表示のマネジメントへ</a></p>
+    <button class="close">閉じる</button>
+  </form>
+</dialog>
+<script src="../flip.js" type="module"></script>
+</body>
+</html>
