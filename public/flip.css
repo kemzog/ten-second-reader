@@ -1,5 +1,5 @@
 /* Paper-like magazine pages: muted warm stock with fibre grain, ink that is not pure black,
-   Mincho headlines, thin rules between blocks, and something anchored in every corner. */
+   the iPhone system font (San Francisco + Hiragino Sans), thin rules between blocks, and something anchored in every corner. */
 :root {
   --desk: #d9d2c3;
   --paper: #f2ede2;
@@ -28,7 +28,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--desk); color: var(--ink); overflow: hidden; }
 body {
-  font: 16px/1.6 "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -134,8 +134,9 @@ body {
   margin-top: 4px;
 }
 .no-num {
-  font: 400 34px/.9 "Didot", "Bodoni 72", "Times New Roman", serif;
-  font-variant-numeric: lining-nums;
+  font: 300 30px/.9 -apple-system, BlinkMacSystemFont, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
   color: var(--ink);
 }
 
@@ -164,40 +165,35 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   text-align: center;
+  overflow: hidden;
   padding: 18px 4px 8px;
 }
+/* Nothing is clamped: flip.js shrinks the photo, then the type, until the whole text fits.
+   Auto margins centre the text when it fits and let it overflow downward (measurable) when not. */
+.body > :first-child { margin-top: auto; }
+.body > :last-child { margin-bottom: auto; }
 .headline {
-  font-size: clamp(22px, 6.6vw, 28px);
-  line-height: 1.5;
-  font-weight: 600;
+  font-size: calc(20px * var(--fit, 1));
+  line-height: 1.45;
+  font-weight: 700;
   margin: 0;
-  letter-spacing: .04em;
-  max-width: 15em; /* keep centred lines from running too long */
+  letter-spacing: .01em;
+  max-width: 17em; /* keep centred lines from running too long */
   text-wrap: balance;
   word-break: auto-phrase;
-  text-shadow: 0 0 .5px currentColor; /* a touch of ink spread */
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
-.no-photo .headline { font-size: clamp(24px, 7.4vw, 32px); -webkit-line-clamp: 7; }
+.no-photo .headline { font-size: calc(22px * var(--fit, 1)); }
 .rule { display: block; width: 28px; height: 1px; background: var(--ink-soft); margin: 16px 0; flex: none; }
 .dek {
-  font-size: 13px;
-  line-height: 1.9;
+  font-size: calc(14px * var(--fit, 1));
+  line-height: 1.7;
   color: var(--ink-soft);
   margin: 0;
-  max-width: 22em;
-  letter-spacing: .03em;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-width: 24em;
 }
+.photo.small img { height: min(18vh, 160px); }
 
 /* foot: date bottom-left, actions bottom-right, rule above */
 .foot {

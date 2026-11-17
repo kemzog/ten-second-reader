@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 
-const SUMMARY_LEN = 90;
+const SUMMARY_LEN = 160;
 
 const parser = new XMLParser({
   ignoreAttributes: false,

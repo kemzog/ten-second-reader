@@ -1,4 +1,4 @@
-const CACHE = 'tsr-v17';
+const CACHE = 'tsr-v18';
 const SHELL = ['style.css', 'app.js', 'sync.js', 'claude.js', 'flip.js', 'flip.css', 'icon.svg'];
 
 self.addEventListener('install', (e) => {
