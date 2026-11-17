@@ -73,3 +73,24 @@ test('mergeCandidates adds data repo picks and lets them override by URL', async
   assert.deepEqual(merged.management, [{ name: 'A', url: 'a', note: 'base', reason: 'why' }, { name: 'B', url: 'b' }]);
   assert.deepEqual(Object.keys(merged), ['management', 'design', 'engineering']);
 });
+
+test('feedImage finds enclosure, media and inline images', async () => {
+  const { feedImage } = await import('../scripts/fetch.mjs');
+  const xml = `<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>X</title><link>https://a.example</link>
+<item><title>e</title><link>https://a.example/1</link><enclosure url="http://a.example/e.jpg" type="image/jpeg" length="1"/></item>
+<item><title>m</title><link>https://a.example/2</link><media:thumbnail url="https://a.example/m.png"/></item>
+<item><title>i</title><link>https://a.example/3</link><content:encoded><![CDATA[<p><img src="/img/x.webp" alt=""></p>]]></content:encoded></item>
+<item><title>n</title><link>https://a.example/4</link><description>no image</description></item>
+</channel></rss>`;
+  assert.deepEqual(parseFeed(xml, 'X').map((i) => i.image), [
+    'https://a.example/e.jpg', 'https://a.example/m.png', 'https://a.example/img/x.webp', '',
+  ]);
+  assert.equal(typeof feedImage, 'function');
+});
+
+test('pageImage reads og:image in either attribute order', async () => {
+  const { pageImage } = await import('../scripts/fetch.mjs');
+  assert.equal(pageImage('<meta property="og:image" content="https://x/a.jpg?a=1&amp;b=2">'), 'https://x/a.jpg?a=1&b=2');
+  assert.equal(pageImage('<meta content="https://x/b.jpg" name="twitter:image" />'), 'https://x/b.jpg');
+  assert.equal(pageImage('<html></html>'), '');
+});

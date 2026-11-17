@@ -1,4 +1,4 @@
-// Page-flip reader: one article per page, swipe left to turn the page like a magazine.
+// Page-flip reader: one article per page, swipe right to turn the page like a magazine.
 // Shares data, token, read state and history with the list pages (app.js); only the UI differs.
 import {
   flush, getExcluded, getSeen, getToken, logEvent, markSeen, pendingCount, pullExcluded, pullSeen, readItems,
@@ -83,13 +83,30 @@ function leaf(i) {
     if (dragged) { e.preventDefault(); return; }
     event('open', item);
   });
-  page.append(
-    el('div', 'kicker', item.source),
-    el('h1', 'headline', item.title),
-    ...(item.summary ? [el('p', 'dek', item.summary)] : []),
-    el('div', 'byline', `${ago(item.published)} · タップで記事へ`),
-  );
-  const actions = el('div', 'actions');
+  // Masthead: source on the left, issue-style page number on the right, a rule beneath.
+  const head = el('div', 'masthead');
+  const no = el('div', 'no');
+  no.append(el('span', 'no-label', 'NO.'), el('span', 'no-num', String(i + 1).padStart(2, '0')));
+  head.append(el('div', 'kicker', item.source), no);
+  page.append(head);
+  if (item.image) {
+    const fig = el('figure', 'photo');
+    const img = new Image();
+    img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer'; // some sites refuse hotlinked images with a foreign referrer
+    img.alt = '';
+    img.draggable = false;
+    img.addEventListener('error', () => { fig.remove(); l.classList.add('no-photo'); });
+    img.src = item.image;
+    fig.append(img);
+    page.append(fig);
+  } else {
+    l.classList.add('no-photo');
+  }
+  const body = el('div', 'body');
+  body.append(el('h1', 'headline', item.title));
+  if (item.summary) body.append(el('span', 'rule'), el('p', 'dek', item.summary));
+  page.append(body);
   const like = el('button', 'good');
   like.type = 'button';
   like.innerHTML = HEART;
@@ -104,8 +121,9 @@ function leaf(i) {
     window.open(claudeUrl(item), '_blank', 'noopener');
     event('claude', item);
   });
-  actions.append(like, ask);
-  l.append(page, actions, el('div', 'folio', `${i + 1} / ${pages.length}`), el('div', 'shade'));
+  const foot = el('div', 'foot');
+  foot.append(el('span', 'date', `${ago(item.published)} · ${i + 1} / ${pages.length}`), like, ask);
+  l.append(page, foot, el('div', 'shade'));
   return l;
 }
 
@@ -130,7 +148,7 @@ function build() {
   prevLeaf = idx > 0 ? leaf(idx - 1) : null;
   curLeaf = leaf(idx);
   nextLeaf = idx < pages.length ? leaf(idx + 1) : null;
-  if (prevLeaf) { prevLeaf.classList.add('prev'); setAngle(prevLeaf, -90); }
+  if (prevLeaf) { prevLeaf.classList.add('prev'); setAngle(prevLeaf, 90); }
   if (nextLeaf) nextLeaf.classList.add('next');
   curLeaf.classList.add('cur');
   book.replaceChildren(...[nextLeaf, curLeaf, prevLeaf].filter(Boolean));
@@ -139,18 +157,19 @@ function build() {
   $('next').disabled = idx >= pages.length;
 }
 
-// The leaf hinges on its left edge. Its free edge follows the finger: x = W·cos(angle).
+// The leaf hinges on its right edge and lifts toward the reader as the finger pulls its
+// left edge to the right. The free edge follows the finger: its distance from the hinge is W·cos(angle).
 function setAngle(l, deg) {
   l.style.transform = `rotateY(${deg}deg)`;
   // Light falls off as the page lifts; the page below brightens as it is uncovered.
-  l.querySelector('.shade').style.opacity = String(Math.sin((-deg * Math.PI) / 180) * 0.55);
+  l.querySelector('.shade').style.opacity = String(Math.sin((deg * Math.PI) / 180) * 0.55);
 }
 function setUnder(l, p) {
   if (!l) return;
   l.style.transform = `scale(${0.965 + 0.035 * p})`;
   l.querySelector('.shade').style.opacity = String((1 - p) * 0.45);
 }
-const angleFor = (p) => (-Math.acos(Math.min(Math.max(p, 0), 1)) * 180) / Math.PI;
+const angleFor = (p) => (Math.acos(Math.min(Math.max(p, 0), 1)) * 180) / Math.PI;
 
 // p: 0 = flat, 1 = turned away. For forward turns the current leaf lifts; for back the previous leaf returns.
 function pose(dir, p) {
@@ -217,7 +236,7 @@ window.addEventListener('pointermove', (e) => {
   if (!drag.dir) {
     if (Math.abs(dx) < 8) return;
     if (Math.abs(e.clientY - drag.y0) > Math.abs(dx)) { drag = null; return; }
-    drag.dir = dx < 0 ? 1 : -1;
+    drag.dir = dx > 0 ? 1 : -1; // swipe right = next page
     if (!canTurn(drag.dir)) drag.dir = 0;
     dragged = true;
   }
@@ -231,7 +250,7 @@ window.addEventListener('pointermove', (e) => {
     curLeaf.style.transform = `translateX(${dx / 6}px)`;
     return;
   }
-  drag.p = Math.min(Math.max((drag.dir > 0 ? -dx : dx) / W, 0), 1);
+  drag.p = Math.min(Math.max((drag.dir > 0 ? dx : -dx) / W, 0), 1);
   if (!drag.raf) {
     drag.raf = requestAnimationFrame(() => {
       if (drag) { drag.raf = 0; pose(drag.dir, drag.p); }
@@ -244,7 +263,7 @@ function release() {
   cancelAnimationFrame(drag.raf);
   drag = null;
   if (!dir) { curLeaf.style.transform = ''; setTimeout(() => (dragged = false)); return; }
-  const flick = p > 0.05 && (dir > 0 ? v < -FLICK : v > FLICK);
+  const flick = p > 0.05 && (dir > 0 ? v > FLICK : v < -FLICK);
   if (p > COMMIT || flick) turn(dir, p);
   else animate(dir, p, 0);
   setTimeout(() => (dragged = false));
@@ -266,7 +285,8 @@ document.addEventListener('keydown', (e) => {
 });
 let wheelAt = 0;
 book.addEventListener('wheel', (e) => {
-  const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  // Vertical wheel down = next; a horizontal trackpad swipe follows the touch direction (right = next).
+  const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? -e.deltaX : e.deltaY;
   if (Math.abs(d) < 20 || e.timeStamp - wheelAt < 450) return;
   wheelAt = e.timeStamp;
   turn(d > 0 ? 1 : -1);
