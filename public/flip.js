@@ -41,6 +41,10 @@ const ago = (iso) => {
   if (m < 48 * 60) return `${Math.round(m / 60)}時間前`;
   return `${Math.round(m / 1440)}日前`;
 };
+const ymd = (iso) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+};
 const hhmm = (iso) => new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
 // Each source gets its own ink colour, so turning to a new source feels like a new section.
 const hue = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 360, 7);
@@ -83,11 +87,12 @@ function leaf(i) {
     if (dragged) { e.preventDefault(); return; }
     event('open', item);
   });
-  // Masthead: source on the left, issue-style page number on the right, a rule beneath.
+  // Index-style head, like a magazine's contents list: LABEL + serial number on the left,
+  // the date on the right, a rule beneath.
   const head = el('div', 'masthead');
-  const no = el('div', 'no');
-  no.append(el('span', 'no-label', 'NO.'), el('span', 'no-num', String(i + 1).padStart(2, '0')));
-  head.append(el('div', 'kicker', item.source), no);
+  const label = el('div', 'label');
+  label.append(el('span', 'kicker', CATEGORY.toUpperCase()), el('span', 'no-num', String(i + 1).padStart(2, '0')));
+  head.append(label, el('time', 'pubdate', ymd(item.published)));
   page.append(head);
   if (item.image) {
     const fig = el('figure', 'photo');
@@ -104,7 +109,11 @@ function leaf(i) {
     l.classList.add('no-photo');
   }
   const body = el('div', 'body');
-  body.append(el('h1', 'headline', item.title));
+  const byline = el('div', 'byline');
+  byline.append(el('span', 'source', item.source), el('span', 'ago', ago(item.published)));
+  // Japanese titles get 『』 like a quoted headline; others stay as they are.
+  const jp = /[\u3040-\u30ff\u4e00-\u9fff]/.test(item.title) && !/^『.*』$/.test(item.title);
+  body.append(byline, el('h1', jp ? 'headline quoted' : 'headline', jp ? `『${item.title}』` : item.title));
   if (item.summary) body.append(el('span', 'rule'), el('p', 'dek', item.summary));
   page.append(body);
   const like = el('button', 'good');
@@ -122,7 +131,7 @@ function leaf(i) {
     event('claude', item);
   });
   const foot = el('div', 'foot');
-  foot.append(el('span', 'date', `${ago(item.published)} · ${i + 1} / ${pages.length}`), like, ask);
+  foot.append(el('span', 'date', `${i + 1} / ${pages.length}`), like, ask);
   l.append(page, foot, el('div', 'shade'));
   return l;
 }
@@ -238,6 +247,23 @@ function sendTurned() {
   turned.clear();
 }
 
+// --- the top bar (progress, update time, settings): hidden until pulled down ---
+
+const bar = document.querySelector('.bar');
+let barShown = false;
+const barShift = () => bar.offsetHeight - (parseFloat(getComputedStyle(document.body).paddingTop) || 0);
+function reveal(r) {
+  r = Math.min(Math.max(r, 0), 1);
+  if (drag) drag.r = r;
+  bar.style.transform = `translateY(${(r - 1) * 100}%)`;
+  book.style.transform = `translateY(${r * barShift()}px)`;
+}
+function setBar(on) {
+  barShown = on;
+  document.body.classList.add('revealing');
+  reveal(on ? 1 : 0);
+}
+
 // --- touch / mouse drag ---
 
 let drag = null;
@@ -251,12 +277,24 @@ book.addEventListener('pointerdown', (e) => {
 window.addEventListener('pointermove', (e) => {
   if (!drag) return;
   const dx = e.clientX - drag.x0;
-  if (!drag.dir) {
-    if (Math.abs(dx) < 8) return;
-    if (Math.abs(e.clientY - drag.y0) > Math.abs(dx)) { drag = null; return; }
-    drag.dir = dx > 0 ? 1 : -1; // swipe right = next page
-    if (!canTurn(drag.dir)) drag.dir = 0;
+  if (!drag.dir && !drag.vert && !drag.locked) {
+    const dy = e.clientY - drag.y0;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 8) return;
+    drag.locked = true;
     dragged = true;
+    if (Math.abs(dy) > Math.abs(dx)) {
+      // Vertical: pull down to reveal the bar, push up to tuck it away.
+      drag.vert = true;
+      drag.r0 = barShown ? 1 : 0;
+      document.body.classList.remove('revealing');
+    } else {
+      drag.dir = dx > 0 ? 1 : -1; // swipe right = next page
+      if (!canTurn(drag.dir)) drag.dir = 0;
+    }
+  }
+  if (drag.vert) {
+    reveal(drag.r0 + (e.clientY - drag.y0) / (barShift() * 1.6));
+    return;
   }
   const dt = e.timeStamp - drag.t;
   if (dt > 0) drag.v = 0.8 * ((e.clientX - drag.x) / dt) + 0.2 * drag.v;
@@ -277,6 +315,13 @@ window.addEventListener('pointermove', (e) => {
 });
 function release() {
   if (!drag) return;
+  if (drag.vert) {
+    const r = drag.r ?? drag.r0;
+    drag = null;
+    setBar(r > (barShown ? 0.7 : 0.3));
+    setTimeout(() => (dragged = false));
+    return;
+  }
   const { dir, p, v } = drag;
   cancelAnimationFrame(drag.raf);
   drag = null;
