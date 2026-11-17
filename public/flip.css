@@ -32,7 +32,6 @@ body {
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
   -webkit-font-smoothing: antialiased;
@@ -51,29 +50,35 @@ body {
   padding: calc(10px + env(safe-area-inset-top)) max(18px, calc(50% - 322px)) 8px;
   font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
   color: var(--ink-soft);
+  /* laid over the page like a sheet of tracing paper */
+  background: color-mix(in srgb, var(--desk) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--rule), 0 6px 18px rgb(40 30 10 / .12);
 }
-.bar, #book { will-change: transform; }
-.revealing .bar, .revealing #book { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+.bar { will-change: transform; }
+.revealing .bar { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
 #progress { font-weight: 600; color: var(--ink); }
 #open-settings { border: 0; background: none; color: var(--ink-soft); font-size: 15px; margin-left: 8px; padding: 2px 4px; }
 
 #book {
   position: relative;
   flex: 1;
-  margin: 10px 12px 12px;
+  margin: 0;
   perspective: 1500px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
-@media (min-width: 720px) { #book { width: 600px; margin: 8px auto 24px; } }
+/* Full screen on a phone; a page on a desk on wider screens. */
+@media (min-width: 720px) { #book { width: 600px; margin: 24px auto; } }
 
 .leaf {
   position: absolute;
   inset: 0;
   background-color: var(--paper);
   background-image: var(--grain), var(--fibre);
-  border-radius: 10px 3px 3px 10px;
+  border-radius: 0;
   box-shadow: 0 1px 1px rgb(60 45 20 / .12), 0 10px 26px rgb(60 45 20 / .14);
   transform-origin: right center;
   backface-visibility: hidden;
@@ -110,7 +115,7 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 22px 24px 0;
+  padding: calc(18px + env(safe-area-inset-top)) 32px 0;
   color: inherit;
   text-decoration: none;
   -webkit-touch-callout: none;
@@ -214,8 +219,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0 24px;
-  padding: 10px 0 16px;
+  margin: 0 32px;
+  padding: 10px 0 calc(12px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--rule);
 }
 .date {
@@ -282,3 +287,24 @@ dialog button { font: inherit; padding: 6px 12px; border: 1px solid var(--rule);
 dialog a { color: var(--accent); }
 .close { width: 100%; }
 .hint { font-size: 12px; color: var(--ink-soft); }
+
+@media (min-width: 720px) {
+  .leaf { border-radius: 10px 3px 3px 10px; }
+}
+
+/* Registration crosses on both edges, hinting that pages turn sideways. */
+.cross {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 84px;
+  margin-top: -42px;
+  pointer-events: none;
+  color: var(--ink);
+  opacity: .75;
+}
+.cross.l { left: 7px; }
+.cross.r { right: 7px; }
+.cross::before, .cross::after { content: ""; position: absolute; background: currentColor; }
+.cross::before { left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -.5px; }
+.cross::after { top: 50%; left: 0; right: 0; height: 1px; margin-top: -.5px; }
