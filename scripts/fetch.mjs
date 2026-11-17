@@ -47,6 +47,43 @@ function absolute(link, base) {
   }
 }
 
+// The article's top image, from the feed: enclosure, media:content / media:thumbnail (with
+// namespaces removed they become content / thumbnail), or the first <img> in the HTML body.
+const IMG_EXT = /\.(jpe?g|png|webp|gif|avif)(\?|$)/i;
+export function feedImage(i) {
+  for (const e of arr(i.enclosure)) {
+    const url = e?.['@url'];
+    if (url && (String(e['@type'] ?? '').startsWith('image') || IMG_EXT.test(url))) return url;
+  }
+  const media = [...arr(i.content), ...arr(i.thumbnail), ...arr(i.group?.content), ...arr(i.group?.thumbnail)];
+  for (const m of media) {
+    const url = m?.['@url'];
+    if (url && (m['@medium'] === 'image' || String(m['@type'] ?? '').startsWith('image') || IMG_EXT.test(url) || !m['@medium'])) return url;
+  }
+  for (const html of [i.encoded, i.description, i.content, i.summary]) {
+    const m = /<img[^>]+src=["']([^"']+)["']/i.exec(text(html));
+    if (m && !/feeds\.feedburner|pixel|tracking|1x1/i.test(m[1])) return m[1];
+  }
+  return '';
+}
+
+// og:image / twitter:image from an article page, for feeds that carry no image.
+export function pageImage(html) {
+  for (const key of ['og:image', 'og:image:url', 'twitter:image']) {
+    const k = key.replace(/:/g, '\\:');
+    const m = new RegExp(`<meta[^>]+(?:property|name)=["']${k}["'][^>]*content=["']([^"']+)["']`, 'i').exec(html)
+      ?? new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]*(?:property|name)=["']${k}["']`, 'i').exec(html);
+    if (m) return m[1].replace(/&amp;/g, '&').trim();
+  }
+  return '';
+}
+
+const httpsUrl = (url, base) => {
+  if (!url) return '';
+  const abs = absolute(url.trim(), base);
+  return /^https?:\/\//.test(abs) ? abs.replace(/^http:/, 'https:') : '';
+};
+
 // Normalize RSS 2.0, RSS 1.0 (RDF) and Atom into one item shape.
 // Relative links resolve against feed.site if set, else the channel link, else feed.url.
 export function parseFeed(xml, source, feed = {}) {
@@ -61,6 +98,7 @@ export function parseFeed(xml, source, feed = {}) {
       summary: i.description ?? i.encoded,
       date: i.pubDate ?? i.date,
       guid: text(i.guid),
+      image: feedImage(i),
     }));
   } else if (doc.RDF) {
     site = text(doc.RDF.channel?.link);
@@ -70,6 +108,7 @@ export function parseFeed(xml, source, feed = {}) {
       summary: i.description,
       date: i.date,
       guid: i['@about'],
+      image: feedImage(i),
     }));
   } else if (doc.feed) {
     site = atomLink(doc.feed.link);
@@ -79,6 +118,7 @@ export function parseFeed(xml, source, feed = {}) {
       summary: e.summary ?? e.content,
       date: e.published ?? e.updated,
       guid: text(e.id),
+      image: feedImage(e),
     }));
   }
   const base = feed.site || absolute(site.trim(), feed.url) || feed.url;
@@ -96,6 +136,7 @@ export function parseFeed(xml, source, feed = {}) {
         summary,
         link,
         source,
+        image: httpsUrl(r.image, link),
         published: Number.isNaN(t) ? null : new Date(t).toISOString(),
       };
     })
@@ -130,8 +171,34 @@ async function fetchFeed(feed) {
   return parseFeed(await res.text(), name, feed);
 }
 
+// Items whose feed has no image get the article page's og:image. A previous run's items.json
+// (prevDir) is reused, so each article page is fetched once; '' records "looked, none".
+async function fillImages(items, prev) {
+  const known = new Map((prev?.items ?? []).map((i) => [i.id, i.image ?? '']));
+  const todo = [];
+  for (const i of items) {
+    if (i.image) continue;
+    if (known.has(i.id)) i.image = known.get(i.id);
+    else todo.push(i);
+  }
+  const worker = async () => {
+    for (let item; (item = todo.shift());) {
+      try {
+        const res = await fetch(item.link, {
+          headers: { 'user-agent': 'Mozilla/5.0 (compatible; ten-second-reader)' },
+          signal: AbortSignal.timeout(8_000),
+        });
+        item.image = res.ok ? httpsUrl(pageImage((await res.text()).slice(0, 300_000)), item.link) : '';
+      } catch {
+        item.image = '';
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
+}
+
 // Each category gets its own file: <outDir>/<category>/items.json.
-async function fetchCategory(category, feeds, config, outDir) {
+async function fetchCategory(category, feeds, config, outDir, prevDir) {
   const results = await Promise.allSettled(feeds.map(fetchFeed));
   const all = [];
   results.forEach((r, i) => {
@@ -144,6 +211,8 @@ async function fetchCategory(category, feeds, config, outDir) {
     }
   });
   const items = selectItems(all, config);
+  const prev = prevDir ? await readJson(join(prevDir, category, 'items.json'), null).catch(() => null) : null;
+  await fillImages(items, prev);
   const out = { updated: new Date().toISOString(), feeds: feeds.map((f) => f.name), items };
   const dir = join(outDir, category);
   await mkdir(dir, { recursive: true });
@@ -216,16 +285,17 @@ async function fetchCandidates(config, dataDir, outDir) {
   if (insights) await writeFile(join(dir, 'insights.json'), JSON.stringify(insights));
 }
 
-async function main(feedsPath = 'feeds.json', outDir = 'out') {
+// prevDir (optional): the last published items, to reuse looked-up images.
+async function main(feedsPath = 'feeds.json', outDir = 'out', prevDir = '') {
   const config = JSON.parse(await readFile(feedsPath, 'utf8'));
   for (const [category, feeds] of Object.entries(config.categories)) {
-    await fetchCategory(category, feeds, config, outDir);
+    await fetchCategory(category, feeds, config, outDir, prevDir);
   }
   await fetchCandidates(config, dirname(feedsPath), outDir);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main(process.argv[2], process.argv[3]).catch((e) => {
+  main(process.argv[2], process.argv[3], process.argv[4]).catch((e) => {
     console.error(e);
     process.exit(1);
   });
