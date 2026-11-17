@@ -1,20 +1,20 @@
-/* Paper-like magazine pages: muted warm stock with fibre grain, ink that is not pure black,
+/* Quiet paper: a neutral light-grey stock with only a fine grain (no fibres, no warm tint),
+   ink that is not pure black,
    the iPhone system font (San Francisco + Hiragino Sans), thin rules between blocks, and something anchored in every corner. */
 :root {
   /* always printed paper, also in dark mode: a bound book is never black */
   color-scheme: light;
-  --desk: #d9d2c3;
-  --paper: #f2ede2;
-  --ink: #2b2723;
-  --ink-soft: #6f675c;
-  --ink-dek: #514a40;
-  --rule: #b9ae9a;
+  --desk: #d8d8d6;
+  --paper: #e4e4e2;
+  --ink: #1f1f1f;
+  --ink-soft: #6c6c6a;
+  --ink-dek: #4a4a48;
+  --rule: #bdbdbb;
   --accent: #1f5fbf;
   --heart: #c8324f;
   --kicker-l: 34%;
   --grain-a: .10;
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .27 0 0 0 0 .2 0 0 0 .9 -.36'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  --fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .09' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .27 0 0 0 .5 -.22'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .3 0 0 0 0 .3 0 0 0 .55 -.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--desk); color: var(--ink); overflow: hidden; }
@@ -47,7 +47,7 @@ body {
   background: color-mix(in srgb, var(--desk) 88%, transparent);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 var(--rule), 0 6px 18px rgb(40 30 10 / .12);
+  box-shadow: 0 1px 0 var(--rule), 0 6px 18px rgb(0 0 0 / .12);
 }
 .bar { will-change: transform; }
 .revealing .bar { transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
@@ -74,9 +74,9 @@ body {
   position: absolute;
   inset: 0;
   background-color: var(--paper);
-  background-image: var(--grain), var(--fibre);
+  background-image: var(--grain);
   border-radius: 0;
-  box-shadow: 0 1px 1px rgb(60 45 20 / .12), 0 10px 26px rgb(60 45 20 / .14);
+  box-shadow: 0 1px 1px rgb(0 0 0 / .12), 0 10px 26px rgb(0 0 0 / .14);
   transform-origin: right center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -92,13 +92,13 @@ body {
   position: absolute;
   inset: 0 0 0 auto;
   width: 22px;
-  background: linear-gradient(to left, rgb(70 50 20 / .10), transparent);
+  background: linear-gradient(to left, rgb(0 0 0 / .05), transparent);
   pointer-events: none;
 }
 .shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgb(30 20 5 / .5), rgb(30 20 5 / .12));
+  background: linear-gradient(to right, rgb(0 0 0 / .5), rgb(0 0 0 / .12));
   opacity: 0;
   pointer-events: none;
 }
@@ -160,7 +160,7 @@ body {
   height: min(30vh, 260px);
   object-fit: cover;
   /* printed look: ink sits in the paper */
-  filter: sepia(.18) saturate(.82) contrast(.94) brightness(1.02);
+  filter: saturate(.85) contrast(.96);
   mix-blend-mode: multiply;
 }
 
@@ -323,5 +323,5 @@ dialog a { color: var(--accent); }
 
 /* Phones: the page is the whole screen, so paint the root as paper too. */
 @media (max-width: 719px) {
-  html, body { background-color: var(--paper); background-image: var(--grain), var(--fibre); }
+  html, body { background-color: var(--paper); background-image: var(--grain); }
 }
