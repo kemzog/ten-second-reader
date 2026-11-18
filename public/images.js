@@ -20,10 +20,39 @@ export function usableImage(url) {
 }
 
 // Cut a summary at the end of a sentence rather than in the middle of a word.
+// Entities some feeds escape twice (&amp;#8230; arrives as the text "&#8230;").
+const NAMED = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', hellip: '…', mdash: '—', ndash: '–', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“' };
+export function decodeEntities(text) {
+  let s = String(text ?? '');
+  for (let n = 0; n < 2 && /&(#\d+|#x[\da-f]+|[a-z]+);/i.test(s); n++) {
+    s = s.replace(/&(#\d+|#x[\da-f]+|[a-z]+);/gi, (m, e) => {
+      if (e[0] === '#') {
+        const code = e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
+        return Number.isFinite(code) ? String.fromCodePoint(code) : m;
+      }
+      return NAMED[e.toLowerCase()] ?? m;
+    });
+  }
+  return s;
+}
+
+// Drop the site name that many pages append to their titles: "Title | Blog | Goodpatch グッドパッチ".
+export function cleanTitle(title, source = '') {
+  const parts = decodeEntities(title).split(/\s+[|｜]\s+|\s*｜\s*/);
+  const site = source.toLowerCase().split(/\s+/)[0];
+  const isSite = (p) => {
+    const t = p.toLowerCase();
+    return /^(blog|ブログ|news|ニュース|note)$/.test(t) || (site && (t.includes(site) || site.includes(t.split(/\s+/)[0])));
+  };
+  while (parts.length > 1 && isSite(parts.at(-1))) parts.pop();
+  return parts.join(' | ').trim();
+}
+
 export function tidySummary(text, max = 160) {
   if (!text) return '';
-  let s = text.replace(/…$/, '').trim();
-  const cut = s.length > max || /…$/.test(text);
+  const raw = decodeEntities(text).replace(/\s*\[(…|\.\.\.)\]\s*$/, '…').trim();
+  let s = raw.replace(/…$/, '').trim();
+  const cut = s.length > max || /…$/.test(raw);
   if (s.length > max) s = s.slice(0, max);
   if (!cut) return s;
   const ends = [...s.matchAll(/[。．！？!?]|\.(\s|$)/g)].map((m) => m.index + 1);

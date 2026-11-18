@@ -184,7 +184,7 @@ body {
 .body > :last-child { margin-bottom: auto; }
 .headline {
   font-size: calc(20px * var(--fit, 1));
-  line-height: 1.45;
+  line-height: 1.38;
   font-weight: 700;
   margin: 0;
   letter-spacing: .01em;
@@ -194,7 +194,6 @@ body {
   overflow-wrap: normal;
   align-self: stretch; /* the column width, not its longest phrase, so overflow is measurable */
   font-feature-settings: "palt";
-  hanging-punctuation: first allow-end;
 }
 .loose .headline { overflow-wrap: anywhere; }
 /* Text-only pages are set like a typographic magazine spread: the title itself fills the
@@ -208,8 +207,8 @@ body {
 /* the serial numeral is the same on every page, so it stays put as pages turn */
 .no-num { font-size: max(64px, 19cqw); font-weight: 100; letter-spacing: -.03em; line-height: .78; }
 .no-photo .body { padding-top: 6cqw; }
-.no-photo .rule { width: 40px; margin: 22px 0 14px; background: var(--ink); }
-.rule { display: block; width: 24px; height: 1px; background: var(--ink-soft); margin: 14px 0; flex: none; }
+.rule { display: block; width: 40px; height: 1px; background: var(--ink); margin: 18px 0 14px; flex: none; }
+.no-photo .rule { margin-top: 22px; }
 .dek {
   font-size: calc(14px * var(--fit, 1));
   line-height: 1.7;

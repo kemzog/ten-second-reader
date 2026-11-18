@@ -5,7 +5,7 @@ import {
   setToken,
 } from './sync.js';
 import { claudeUrl } from './claude.js';
-import { splitSource, tidySummary, usableImage, phrases } from './images.js';
+import { cleanTitle, splitSource, tidySummary, usableImage, phrases } from './images.js';
 
 const CATEGORY = document.body.dataset.category;
 const ITEMS_KEY = `items:${CATEGORY}`;
@@ -117,10 +117,11 @@ function leaf(i) {
   byline.append(el('span', 'source', name));
   if (topic) byline.append(el('span', 'topic', topic));
   // 『』 only on short Japanese titles that carry no brackets of their own.
-  const quoted = /[\u3040-\u30ff\u4e00-\u9fff]/.test(item.title) && item.title.length <= 24 && !/[「」『』]/.test(item.title);
+  const title = cleanTitle(item.title, name);
+  const quoted = /[\u3040-\u30ff\u4e00-\u9fff]/.test(title) && title.length <= 24 && !/[「」『』【】]/.test(title);
   const head1 = el('h1', 'headline');
   // wrap only between phrases (Safari has no word-break: auto-phrase)
-  phrases(quoted ? `『${item.title}』` : item.title).forEach((p, n) => {
+  phrases(quoted ? `『${title}』` : title).forEach((p, n) => {
     if (n) head1.append(document.createElement('wbr'));
     head1.append(p);
   });

@@ -35,3 +35,15 @@ test('phrases: no break inside curly quotes', async () => {
   const { phrases } = await import('../public/images.js');
   assert.ok(phrases('Agent “haro”に任せたら').includes('“haro”に'));
 });
+
+test('cleanTitle drops the appended site name', async () => {
+  const { cleanTitle } = await import('../public/images.js');
+  assert.equal(cleanTitle('【AI × UI】作り方（レポート） | Blog | Goodpatch グッドパッチ', 'Goodpatch'), '【AI × UI】作り方（レポート）');
+  assert.equal(cleanTitle('A | B', 'Zenn'), 'A | B');
+});
+
+test('tidySummary decodes double-escaped entities and [...] tails', async () => {
+  const { tidySummary } = await import('../public/images.js');
+  assert.equal(tidySummary('社員が生成AIツールを使う [&amp;#8230;]'), '社員が生成AIツールを使う…');
+  assert.equal(tidySummary('A &amp; B'), 'A & B');
+});
